@@ -1,6 +1,6 @@
 plugins { id 'net.neoforged.moddev' version '2.0.147' }
 group = 'fr.mineboard'
-version = '0.1.0-alpha.3'
+version = '0.1.0-alpha.4'
 base { archivesName = 'mineboard-neoforge-26.2' }
 java { toolchain.languageVersion = JavaLanguageVersion.of(25); withSourcesJar() }
 neoForge {

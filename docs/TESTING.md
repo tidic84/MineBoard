@@ -4,7 +4,7 @@
 
 `gradlew build` compile le serveur et le client, exécute les tests du cœur, puis produit le JAR Fabric remappé contenant le cœur.
 
-`TableGameTest` vérifie les conditions de lancement, l'autorité de l'hôte, la confidentialité, les coups périmés/illégaux, les bornes d'index, la pioche, la sortie d'un joueur, la pioche épuisée et 100 parties complètes avec mélanges déterministes jusqu'à la victoire et la remise au lobby.
+`TableGameTest` vérifie la défausse : lancement, hôte, confidentialité, coups périmés, pioche, recyclage et 100 parties. `MemoryGameTest`, `EffectsGameTest`, `CheckersGameTest`, `DraftGameTest` et `LayoutsTest` couvrent les autres jeux et la géométrie du plateau (paires, effets 0/2, ouverture des dames, draft simultané, cartes mémoire sans superposition, pions distincts des cartes).
 
 ## Parcours manuel à deux clients
 
@@ -34,7 +34,7 @@ Les essais unitaires ne remplacent pas la validation visuelle ni un essai résea
 - Client NeoForge lancé : ressources du mod chargées, absence d'erreur de modèle ou de texture MineBoard dans les logs de chargement.
 - JAR final installé sur un serveur NeoForge standard, limité à `127.0.0.1:25576` : démarrage complet, placement de `mineboard:table`, lecture de son NBT et arrêt propre avec sauvegarde.
 
-Le profil serveur **de développement** Architectury Loom a rencontré un chargement de classe client dans le code réseau de NeoForge. Le même JAR a démarré dans l'installation serveur standard. Ce problème de profil Gradle reste à résoudre ; utiliser un serveur standard pour les tests dédiés en attendant. Ne pas confondre ce test avec une partie réseau complète sur NeoForge.
+Le profil `runServer` Architectury Loom charge un JAR Minecraft fusionné : `RuntimeDistCleaner` refuse `MinecraftClient` pendant l'enregistrement des paquets NeoForge. Utiliser `gradlew -p neoforge-1.21.1 runDedicated` (serveur standard, port `25576`) ou copier le JAR remappé dans une installation dédiée. Ne pas confondre ce test avec une partie réseau complète sur NeoForge.
 
 La disposition alpha.2 doit encore être appréciée visuellement en jeu. Le centrage, les marges et les limites de clic ont été vérifiés dans le code ; aucune nouvelle capture d'écran de la main n'a été validée pendant cette itération.
 

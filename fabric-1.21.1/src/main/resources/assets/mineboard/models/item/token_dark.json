@@ -1,0 +1,30 @@
+{
+  "gui_light": "front",
+  "textures": { "all": "mineboard:item/token_dark", "crown": "mineboard:item/token_dark", "particle": "mineboard:item/token_dark" },
+  "elements": [
+    {
+      "from": [3, 7.7, 3],
+      "to": [13, 8.5, 13],
+      "faces": {
+        "up": { "uv": [0, 0, 16, 16], "texture": "#all" },
+        "down": { "uv": [0, 0, 16, 16], "texture": "#all" },
+        "north": { "uv": [0, 12, 16, 16], "texture": "#all" },
+        "south": { "uv": [0, 12, 16, 16], "texture": "#all" },
+        "east": { "uv": [0, 12, 16, 16], "texture": "#all" },
+        "west": { "uv": [0, 12, 16, 16], "texture": "#all" }
+      }
+    },
+    {
+      "from": [3, 7.7, 3],
+      "to": [13, 8.5, 13],
+      "rotation": { "angle": 45, "axis": "y", "origin": [8, 8, 8] },
+      "faces": {
+        "up": { "uv": [0, 0, 16, 16], "texture": "#all" },
+        "north": { "uv": [0, 12, 16, 16], "texture": "#all" },
+        "south": { "uv": [0, 12, 16, 16], "texture": "#all" },
+        "east": { "uv": [0, 12, 16, 16], "texture": "#all" },
+        "west": { "uv": [0, 12, 16, 16], "texture": "#all" }
+      }
+    }
+  ]
+}

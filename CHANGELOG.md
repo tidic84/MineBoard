@@ -1,5 +1,14 @@
 # Versions de développement
 
+## 0.1.0-alpha.4 — plusieurs jeux
+
+- Moteur de table séparé des règles : session, actions génériques, pièces 3D et actions légales.
+- Cinq jeux : défausse, mémoire, défausse à effets (0/1/2), dames, draft simultané.
+- L'hôte change de jeu dans le lobby. La défausse simple reste le défaut.
+- Grille mémoire espacée selon le rectangle 8×12 des cartes, sans superposition.
+- Dames : damier et pions 3D (dames empilées), plus de cartes numérotées.
+- Zoom de la caméra (molette sur la table, +/−). Le cadrage suit l'emprise du plateau.
+
 ## 0.1.0-alpha.3 — ports Minecraft 26.2
 
 - Builds Fabric 26.2 et NeoForge 26.2, Java 25 et Gradle 9.5.1.

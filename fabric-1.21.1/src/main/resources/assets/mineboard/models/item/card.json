@@ -240,6 +240,42 @@
                                             "custom_model_data":  40
                                         },
                           "model":  "mineboard:item/card_39"
+                      },
+                      {
+                          "predicate":  {
+                                            "custom_model_data":  41
+                                        },
+                          "model":  "mineboard:item/cell_light"
+                      },
+                      {
+                          "predicate":  {
+                                            "custom_model_data":  42
+                                        },
+                          "model":  "mineboard:item/cell_dark"
+                      },
+                      {
+                          "predicate":  {
+                                            "custom_model_data":  43
+                                        },
+                          "model":  "mineboard:item/token_light"
+                      },
+                      {
+                          "predicate":  {
+                                            "custom_model_data":  44
+                                        },
+                          "model":  "mineboard:item/token_dark"
+                      },
+                      {
+                          "predicate":  {
+                                            "custom_model_data":  45
+                                        },
+                          "model":  "mineboard:item/token_king_light"
+                      },
+                      {
+                          "predicate":  {
+                                            "custom_model_data":  46
+                                        },
+                          "model":  "mineboard:item/token_king_dark"
                       }
                   ]
 }

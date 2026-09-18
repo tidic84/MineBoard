@@ -1,126 +1,108 @@
 package fr.mineboard.core;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
+import java.util.UUID;
 
-/** Server-owned rules. No Minecraft, rendering, or loader dependencies. */
+/** Server-owned table. Rules live in Game implementations; never send a TableGame to a client. */
 public final class TableGame {
     public enum Phase { LOBBY, PLAYING, FINISHED }
     public record Seat(UUID id, String name, boolean ready, int count) {}
-    /** Only the recipient's hand is exposed; never send a TableGame to a client. */
+    public record Piece(int id, int card, double x, double y, double z, float angle, float scale, String kind, String action) {}
+    public record Move(String type, int target) {}
+    /** Only the recipient's hand is exposed. */
     public record View(long revision, Phase phase, List<Seat> seats, int yourSeat,
                        int turn, int topCard, int deckCount, List<Integer> hand,
-                       int winner, int lastActor, String event) {}
-
-    private final UUID[] players = new UUID[2];
-    private final String[] names = {"", ""};
-    private final boolean[] ready = new boolean[2];
-    private final List<List<Card>> hands = List.of(new ArrayList<>(), new ArrayList<>());
-    private final List<Card> draw = new ArrayList<>();
-    private final List<Card> discard = new ArrayList<>();
-    private final Random random;
-    private Phase phase = Phase.LOBBY;
-    private int turn, winner = -1, lastActor = -1;
-    private long revision;
-    private String event = "welcome";
-
-    public TableGame(Random random) { this.random = Objects.requireNonNull(random); }
-    public int seatOf(UUID id) {
-        for (int i = 0; i < 2; i++) if (id.equals(players[i])) return i;
-        return -1;
-    }
-    public String join(UUID id, String name) {
-        if (seatOf(id) >= 0) return "already_joined";
-        if (phase != Phase.LOBBY) return "already_started";
-        for (int i = 0; i < 2; i++) if (players[i] == null) {
-            players[i] = id;
-            names[i] = name;
-            changed("joined", i);
-            return "";
+                       int winner, int lastActor, String event, String gameId, String countKey,
+                       String hintKey, String controlsKey, String startKey, int host, double boardSpan,
+                       List<Integer> playable, List<String> buttons, List<Piece> pieces, List<Move> moves) {
+        public String gameId() { return gameId == null || gameId.isEmpty() ? Games.DISCARD : gameId; }
+        public String countKey() { return countKey == null || countKey.isEmpty() ? "hand" : countKey; }
+        public String hintKey() { return hintKey == null || hintKey.isEmpty() ? "lobby.hint" : hintKey; }
+        public String controlsKey() { return controlsKey == null || controlsKey.isEmpty() ? "controls" : controlsKey; }
+        public String startKey() { return startKey == null || startKey.isEmpty() ? "start" : startKey; }
+        public double boardSpan() { return boardSpan <= 0 ? 1 : boardSpan; }
+        public List<Integer> playable() { return playable == null ? List.of() : playable; }
+        public List<String> buttons() { return buttons == null ? List.of() : buttons; }
+        public List<Piece> pieces() { return pieces == null ? List.of() : pieces; }
+        public List<Move> moves() { return moves == null ? List.of() : moves; }
+        public boolean allows(String type, int target) {
+            for (Move move : moves()) if (move.type().equals(type) && move.target() == target) return true;
+            return type.equals("draw") && buttons().contains("draw") && target < 0;
         }
-        return "full";
+        public boolean allows(String type) {
+            if (buttons().contains(type)) return true;
+            for (Move move : moves()) if (move.type().equals(type)) return true;
+            return false;
+        }
     }
-    public String ready(UUID id) {
-        int seat = seatOf(id);
-        if (seat < 0) return "not_seated";
-        if (phase != Phase.LOBBY) return "already_started";
-        ready[seat] = !ready[seat];
-        changed("ready", seat);
-        return "";
+
+    private final Random random;
+    private final TableSession session;
+    private Game game;
+
+    public TableGame(Random random) {
+        this.random = Objects.requireNonNull(random);
+        this.game = Games.create(Games.DISCARD);
+        this.session = new TableSession(game.seats());
     }
+    public String id() { return game.id(); }
+    public int seatOf(UUID id) { return session.seatOf(id); }
+    public String join(UUID id, String name) { return session.join(id, name); }
+    public String ready(UUID id) { return session.ready(id); }
     public String start(UUID id) {
-        if (seatOf(id) != host()) return "host_only";
-        if (phase != Phase.LOBBY) return "already_started";
-        if (players[0] == null || players[1] == null || !ready[0] || !ready[1]) return "not_ready";
-        draw.clear(); discard.clear(); hands.forEach(List::clear);
-        for (int copy = 0; copy < 2; copy++) for (int n = 0; n < 40; n++) draw.add(Card.fromId(n));
-        Collections.shuffle(draw, random);
-        for (int i = 0; i < 7; i++) for (List<Card> hand : hands) hand.add(take());
-        discard.add(take());
-        turn = 0; winner = -1; phase = Phase.PLAYING;
-        changed("started", -1);
-        return "";
+        if (session.seatOf(id) != session.host()) return "host_only";
+        if (session.phase() != Phase.LOBBY) return "already_started";
+        if (!session.allReady()) return "not_ready";
+        game.start(session, random);
+        String error = session.beginPlaying(id);
+        if (error.isEmpty()) session.setTurn(game.startingTurn());
+        return error;
     }
     public String play(UUID id, int index, long expectedRevision) {
-        String error = validateTurn(id, expectedRevision);
-        if (!error.isEmpty()) return error;
-        List<Card> hand = hands.get(turn);
-        if (index < 0 || index >= hand.size()) return "invalid_card";
-        Card card = hand.get(index);
-        if (!card.matches(discard.getLast())) return "cannot_play";
-        discard.add(hand.remove(index));
-        int actor = turn;
-        if (hand.isEmpty()) { phase = Phase.FINISHED; winner = actor; }
-        else turn = 1 - turn;
-        changed("played", actor);
-        return "";
+        return apply(id, "", "play", index, expectedRevision);
     }
-    /** Simplified prototype rule: drawing one card always ends the turn. */
     public String draw(UUID id, long expectedRevision) {
-        String error = validateTurn(id, expectedRevision);
-        if (!error.isEmpty()) return error;
-        if (draw.isEmpty() && discard.size() > 1) {
-            Card top = discard.removeLast();
-            draw.addAll(discard); discard.clear(); discard.add(top);
-            Collections.shuffle(draw, random);
-        }
-        int actor = turn;
-        // With all cards in players' hands, passing keeps the round playable.
-        // The finite 80-card deck inherently bounds every private hand to 79 cards.
-        if (draw.isEmpty()) { turn = 1 - turn; changed("passed", actor); return ""; }
-        hands.get(turn).add(take()); turn = 1 - turn;
-        changed("drew", actor);
-        return "";
+        return apply(id, "", "draw", -1, expectedRevision);
     }
     public String rematch(UUID id) {
-        if (seatOf(id) != host()) return "host_only";
-        if (phase != Phase.FINISHED) return "not_finished";
-        reset(); changed("rematch", -1); return "";
+        String error = session.rematch(id);
+        if (error.isEmpty()) game.clear();
+        return error;
     }
     public void leave(UUID id) {
-        int seat = seatOf(id);
-        if (seat < 0) return;
-        players[seat] = null; names[seat] = "";
-        reset(); changed("left", seat);
+        if (session.leave(id)) game.clear();
+    }
+    public String apply(UUID id, String name, String type, int target, long revision) {
+        return switch (type) {
+            case "join" -> session.join(id, name);
+            case "ready" -> session.ready(id);
+            case "start" -> start(id);
+            case "rematch" -> rematch(id);
+            case "game" -> cycleGame(id);
+            default -> game.apply(session, id, type, target, revision);
+        };
     }
     public View view(UUID recipient) {
-        List<Seat> seats = new ArrayList<>();
-        for (int i = 0; i < 2; i++) seats.add(new Seat(players[i], names[i], ready[i], hands.get(i).size()));
-        int seat = recipient == null ? -1 : seatOf(recipient);
-        return new View(revision, phase, List.copyOf(seats), seat, turn,
-            discard.isEmpty() ? -1 : discard.getLast().id(), draw.size(),
-            seat < 0 ? List.of() : hands.get(seat).stream().map(Card::id).toList(), winner, lastActor, event);
+        ViewBuild build = new ViewBuild();
+        game.populate(session, build, recipient);
+        int seat = recipient == null ? -1 : session.seatOf(recipient);
+        return new View(session.revision(), session.phase(), List.copyOf(session.seats(build.counts)), seat,
+            session.turn(), build.topCard, build.deckCount, List.copyOf(build.hand),
+            session.winner(), session.lastActor(), session.event(), game.id(), game.countKey(),
+            game.hintKey(), game.controlsKey(), game.startKey(), session.host(), game.boardSpan(),
+            List.copyOf(build.playable), List.copyOf(build.buttons), List.copyOf(build.pieces), List.copyOf(build.moves));
     }
-    private int host() { return players[0] != null ? 0 : players[1] != null ? 1 : -2; }
-    private Card take() { return draw.removeLast(); }
-    private String validateTurn(UUID id, long expectedRevision) {
-        if (phase != Phase.PLAYING) return "not_playing";
-        if (seatOf(id) != turn) return "not_your_turn";
-        if (revision != expectedRevision) return "stale";
+    Game rules() { return game; }
+    private String cycleGame(UUID id) {
+        if (session.phase() != Phase.LOBBY) return "already_started";
+        if (session.seatOf(id) != session.host()) return "host_only";
+        game.clear();
+        game = Games.create(Games.next(game.id()));
+        session.resize(game.seats());
+        session.unreadyAll();
+        session.changed("game", session.host());
         return "";
     }
-    private void reset() {
-        phase = Phase.LOBBY; turn = 0; winner = -1;
-        Arrays.fill(ready, false); hands.forEach(List::clear); draw.clear(); discard.clear();
-    }
-    private void changed(String event, int actor) { this.event = event; lastActor = actor; revision++; }
 }

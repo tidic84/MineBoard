@@ -114,3 +114,4 @@ Write-Json 'blockstates/table.json' @{variants=@{''=@{model='mineboard:block/tab
 Write-Json 'models/item/table.json' @{parent='mineboard:block/table';display=@{gui=@{rotation=@(30,45,0);scale=@(0.8,0.8,0.8)}}}
 $font.Dispose(); $small.Dispose(); $fmt.Dispose(); $paper.Dispose(); $ink.Dispose(); $gold.Dispose()
 Write-Host 'Generated 41 card textures, 3D models and felt board.'
+& (Join-Path $PSScriptRoot 'Generate-BoardPieces.ps1')

@@ -1,6 +1,5 @@
 package fr.mineboard.minecraft;
 
-import fr.mineboard.core.TableGame;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -65,16 +64,8 @@ public final class TableNetworking {
         int now = player.level().getServer().getTickCount();
         if (LAST_ACTION.getOrDefault(player.getUUID(), -100) == now) return;
         LAST_ACTION.put(player.getUUID(), now);
-        TableGame game = table.game;
-        String error = switch (packet.action) {
-            case "join" -> game.join(player.getUUID(), player.getGameProfile().name());
-            case "ready" -> game.ready(player.getUUID());
-            case "start" -> game.start(player.getUUID());
-            case "play" -> game.play(player.getUUID(), packet.card, packet.revision);
-            case "draw" -> game.draw(player.getUUID(), packet.revision);
-            case "rematch" -> game.rematch(player.getUUID());
-            default -> "invalid_action";
-        };
+        String error = table.game.apply(player.getUUID(), player.getGameProfile().name(),
+            packet.action, packet.card, packet.revision);
         if (error.isEmpty()) broadcast(table);
         else send(player, table, error, false, false);
     }

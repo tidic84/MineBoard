@@ -1,6 +1,6 @@
 plugins { id 'net.fabricmc.fabric-loom' version '1.17.20' }
 group = 'fr.mineboard'
-version = '0.1.0-alpha.3'
+version = '0.1.0-alpha.4'
 base { archivesName = 'mineboard-fabric-26.2' }
 repositories { mavenCentral() }
 dependencies {

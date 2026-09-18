@@ -1,11 +1,20 @@
 plugins { id 'dev.architectury.loom' version '1.10.453' }
 group = 'fr.mineboard'
-version = '0.1.0-alpha.2'
+version = '0.1.0-alpha.4'
 base { archivesName = 'mineboard-neoforge-1.21.1' }
+def neoForgeVersion = '21.1.219'
+def dedicatedDir = layout.projectDirectory.dir('run-dedicated')
+def dedicatedMarker = dedicatedDir.file("libraries/net/neoforged/neoforge/${neoForgeVersion}/unix_args.txt")
 repositories {
     maven { url = 'https://maven.neoforged.net/releases/' }
     maven { url = 'https://maven.architectury.dev/' }
     mavenCentral()
+}
+configurations {
+    neoForgeInstaller {
+        canBeConsumed = false
+        canBeResolved = true
+    }
 }
 dependencies {
     minecraft 'com.mojang:minecraft:1.21.1'
@@ -13,7 +22,8 @@ dependencies {
         mappings 'net.fabricmc:yarn:1.21.1+build.3:v2'
         mappings 'dev.architectury:yarn-mappings-patch-neoforge:1.21+build.4'
     }
-    neoForge 'net.neoforged:neoforge:21.1.219'
+    neoForge "net.neoforged:neoforge:${neoForgeVersion}"
+    neoForgeInstaller "net.neoforged:neoforge:${neoForgeVersion}:installer"
 }
 
 // Compile the exact same game, screen, camera, rendering and session sources on both loaders.
@@ -46,3 +56,68 @@ java {
     withSourcesJar()
 }
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = 21 }
+
+// Architectury Loom runServer uses a merged client+server jar. RuntimeDistCleaner then
+// rejects MinecraftClient while NeoForge registers packets. A standard dedicated server works.
+afterEvaluate {
+    tasks.named('runServer').configure {
+        doFirst {
+            throw new GradleException('''Architectury Loom runServer cannot start NeoForge 1.21.1 (merged jar + RuntimeDistCleaner). Use:
+
+    .\\gradlew.bat -p neoforge-1.21.1 runDedicated
+''')
+        }
+    }
+}
+
+tasks.register('installDedicatedServer') {
+    group = 'mineboard'
+    description = 'Installs a standard NeoForge dedicated server for runDedicated.'
+    outputs.file dedicatedMarker
+    doLast {
+        dedicatedDir.asFile.mkdirs()
+        if (!dedicatedMarker.asFile.exists()) {
+            exec {
+                workingDir dedicatedDir.asFile
+                commandLine org.gradle.internal.jvm.Jvm.current().javaExecutable,
+                    '-jar', configurations.neoForgeInstaller.singleFile, '--installServer'
+            }
+        }
+        writeDedicatedDefaults(dedicatedDir)
+    }
+}
+
+tasks.register('runDedicated', Exec) {
+    group = 'mineboard'
+    description = 'Starts a standard NeoForge dedicated server with the remapped MineBoard JAR.'
+    dependsOn 'remapJar', 'installDedicatedServer'
+    workingDir dedicatedDir.asFile
+    standardInput = System.in
+    if (org.gradle.internal.os.OperatingSystem.current().windows) {
+        commandLine 'cmd.exe', '/c', 'run.bat', 'nogui'
+    } else {
+        commandLine './run.sh', 'nogui'
+    }
+    doFirst {
+        writeDedicatedDefaults(dedicatedDir)
+        def mods = dedicatedDir.dir('mods').asFile
+        mods.mkdirs()
+        mods.listFiles()?.findAll { it.name.startsWith('mineboard-') && it.name.endsWith('.jar') }?.each { it.delete() }
+        copy {
+            from tasks.named('remapJar').get().archiveFile
+            into mods
+        }
+    }
+}
+
+static void writeDedicatedDefaults(dir) {
+    dir.asFile.mkdirs()
+    def eula = dir.file('eula.txt').asFile
+    if (!eula.exists() || !eula.text.contains('eula=true')) {
+        eula.text = '# Running runDedicated accepts https://aka.ms/MinecraftEULA\neula=true\n'
+    }
+    def properties = dir.file('server.properties').asFile
+    if (!properties.exists()) {
+        properties.text = 'online-mode=false\nserver-port=25576\nmotd=MineBoard dedicated\n'
+    }
+}

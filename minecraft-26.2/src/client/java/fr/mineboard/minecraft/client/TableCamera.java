@@ -1,5 +1,6 @@
 package fr.mineboard.minecraft.client;
 
+import fr.mineboard.core.Layouts;
 import net.minecraft.client.Camera;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
@@ -12,19 +13,19 @@ public final class TableCamera {
     private static long transition, lastFrame;
     private static int lastSeat = -99;
     private static boolean lastOverview, exiting;
-    private static double swayX, swayY;
+    private static double swayX, swayY, zoom;
     private static final double DURATION = 0.75;
 
     public static void begin(Camera camera) {
         displayed = new Pose(camera.position(), camera.yRot(), camera.xRot());
         from = displayed; transition = System.nanoTime(); lastFrame = transition;
-        lastSeat = -99; exiting = false; swayX = swayY = 0;
+        lastSeat = -99; exiting = false; swayX = swayY = 0; zoom = -1;
     }
     public static boolean active() { return displayed != null; }
     public static void exit() {
         if (displayed != null && !exiting) { from = displayed; transition = System.nanoTime(); exiting = true; }
     }
-    public static void reset() { displayed = from = null; exiting = false; lastSeat = -99; }
+    public static void reset() { displayed = from = null; exiting = false; lastSeat = -99; zoom = -1; }
     public static Pose frame(Camera vanilla, TableScreen screen) {
         if (displayed == null) return null;
         long now = System.nanoTime();
@@ -41,10 +42,19 @@ public final class TableCamera {
             double smoothing = 1 - Math.exp(-dt * 8);
             swayX += (screen.swayX() - swayX) * smoothing;
             swayY += (screen.swayY() - swayY) * smoothing;
+            if (zoom < 0) zoom = screen.zoom();
+            else zoom += (screen.zoom() - zoom) * smoothing;
             BlockPos pos = screen.pos();
+            double span = Math.max(screen.view().boardSpan(), Layouts.span(screen.view().pieces()));
             Vec3 center = new Vec3(pos.getX() + .5, pos.getY() + .16, pos.getZ() + .5);
-            Vec3 eye = overview ? center.add(0, 2.5, 1.0)
-                : center.add(0, 1.04, seat == 0 ? 1.55 : -1.55);
+            Vec3 eye;
+            if (overview) {
+                eye = center.add(0, lerp(2.5, 0.92, zoom) * span, lerp(1.0, 0.22, zoom) * span);
+            } else {
+                double height = lerp(1.04, 0.42, zoom) * span;
+                double back = lerp(1.55, 0.68, zoom) * span;
+                eye = center.add(0, height, seat == 0 ? back : -back);
+            }
             Vec3 direction = center.subtract(eye);
             float yaw = (float) Math.toDegrees(Math.atan2(-direction.x, direction.z));
             float pitch = (float) -Math.toDegrees(Math.atan2(direction.y, direction.horizontalDistance()));
@@ -58,5 +68,5 @@ public final class TableCamera {
         if (exiting && t >= 1) { reset(); return null; }
         return displayed;
     }
+    private static double lerp(double far, double near, double amount) { return far + (near - far) * amount; }
 }
-

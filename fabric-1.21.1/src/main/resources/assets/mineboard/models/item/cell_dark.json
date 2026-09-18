@@ -1,0 +1,18 @@
+{
+  "gui_light": "front",
+  "textures": { "all": "mineboard:item/cell_dark", "particle": "mineboard:item/cell_dark" },
+  "elements": [
+    {
+      "from": [0.2, 7.94, 0.2],
+      "to": [15.8, 8.06, 15.8],
+      "faces": {
+        "up": { "uv": [0, 0, 16, 16], "texture": "#all" },
+        "down": { "uv": [0, 0, 16, 16], "texture": "#all" },
+        "north": { "uv": [0, 0, 16, 1], "texture": "#all" },
+        "south": { "uv": [0, 0, 16, 1], "texture": "#all" },
+        "east": { "uv": [0, 0, 16, 1], "texture": "#all" },
+        "west": { "uv": [0, 0, 16, 1], "texture": "#all" }
+      }
+    }
+  ]
+}

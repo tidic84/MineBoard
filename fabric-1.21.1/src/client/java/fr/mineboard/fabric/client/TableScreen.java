@@ -17,7 +17,9 @@ public final class TableScreen extends Screen {
     private TableGame.View view;
     private final List<Control> controls = new ArrayList<>();
     private int selected, offset;
+    private TableGame.Piece hoverPiece;
     private boolean overview, sway = true, opened, serverClosed, menuExpanded;
+    private float zoom = 0.45f;
     private double mouseX, mouseY, lastMouseX = -1, lastMouseY = -1;
     private long pendingUntil, messageUntil, dealtAt;
     private String message = "";
@@ -30,6 +32,7 @@ public final class TableScreen extends Screen {
     public BlockPos pos() { return pos; }
     public TableGame.View view() { return view; }
     public boolean overview() { return overview; }
+    public float zoom() { return zoom; }
     @Override public boolean shouldPause() { return false; }
     @Override protected void init() {
         if (!opened) { TableCamera.begin(client.gameRenderer.getCamera()); opened = true; }
@@ -44,6 +47,9 @@ public final class TableScreen extends Screen {
         selected = MathHelper.clamp(selected, 0, Math.max(0, view.hand().size() - 1));
         ensureVisible();
         if (!error.isEmpty()) { message = tr("error." + error); messageUntil = System.currentTimeMillis() + 3000; }
+        else if (Set.of("skipped", "reversed", "plus2", "matched", "missed", "tied").contains(next.event())) {
+            message = tr("event." + next.event()); messageUntil = System.currentTimeMillis() + 2200;
+        }
     }
     public void closeFromServer() { serverClosed = true; close(); }
     @Override public void close() { client.setScreen(null); }
@@ -73,19 +79,19 @@ public final class TableScreen extends Screen {
         return helpTop() - HAND_GAP - bottom;
     }
     private int handCaptionY() { return (int) (handBaseY() - cardWidth() * .75 - 29); }
-    private boolean myTurn() { return view.phase() == TableGame.Phase.PLAYING && view.yourSeat() == view.turn(); }
+    private boolean myTurn() {
+        return view.phase() == TableGame.Phase.PLAYING && view.yourSeat() >= 0
+            && (view.turn() < 0 || view.yourSeat() == view.turn());
+    }
+    private boolean canAct() {
+        return myTurn() && (view.allows("play") || view.allows("draw") || view.allows("flip") || view.allows("move"));
+    }
     private boolean pending() { return System.currentTimeMillis() < pendingUntil; }
-    private boolean playable(int index) {
-        return myTurn() && index >= 0 && index < view.hand().size() && view.topCard() >= 0
-            && Card.fromId(view.hand().get(index)).matches(Card.fromId(view.topCard()));
-    }
-    private boolean host() {
-        int host = view.seats().getFirst().id() != null ? 0 : 1;
-        return view.yourSeat() == host;
-    }
+    private boolean playable(int index) { return view.allows("play", index); }
+    private boolean host() { return view.yourSeat() >= 0 && view.yourSeat() == view.host(); }
     private void send(String action, int card) {
         if (pending()) return;
-        pendingUntil = System.currentTimeMillis() + 1200;
+        pendingUntil = System.currentTimeMillis() + (action.equals("flip") || action.equals("move") ? 250 : 1200);
         ClientTransport.send(new TableNetworking.Action(pos, action, card, view.revision()));
     }
     private void ensureVisible() {
@@ -115,6 +121,61 @@ public final class TableScreen extends Screen {
         for (int i = cards.size() - 1; i >= 0; i--) if (contains(cards.get(i), x, y)) return cards.get(i).index;
         return -1;
     }
+    private String seatCounts() {
+        StringBuilder text = new StringBuilder();
+        for (int i = 0; i < view.seats().size(); i++) {
+            if (i > 0) text.append(" / ");
+            text.append(view.seats().get(i).count());
+        }
+        return text.append(' ').append(tr(switch (view.countKey()) {
+            case "pairs" -> "pairs.unit";
+            case "tokens" -> "tokens.unit";
+            case "tableau" -> "tableau.unit";
+            default -> "cards";
+        })).toString();
+    }
+    private TableGame.Piece pieceAt(double mouseX, double mouseY) {
+        if (overPanel(mouseX, mouseY) || mouseY >= helpTop() - HAND_GAP) return null;
+        Vec3d hit = tableHit(mouseX, mouseY);
+        if (hit == null) return null;
+        double localX = hit.x - pos.getX(), localZ = hit.z - pos.getZ();
+        TableGame.Piece best = null;
+        double bestDist = Double.MAX_VALUE;
+        List<TableGame.Piece> pieces = view.pieces();
+        for (int i = pieces.size() - 1; i >= 0; i--) {
+            TableGame.Piece piece = pieces.get(i);
+            if (piece.action().isEmpty() || !Layouts.hits(piece, localX, localZ)) continue;
+            double dx = localX - piece.x(), dz = localZ - piece.z();
+            double dist = dx * dx + dz * dz;
+            if (dist < bestDist) { best = piece; bestDist = dist; }
+        }
+        return best;
+    }
+    private Vec3d tableHit(double mouseX, double mouseY) {
+        if (client == null) return null;
+        var camera = client.gameRenderer.getCamera();
+        Vec3d eye = camera.getPos();
+        float yaw = camera.getYaw(), pitch = camera.getPitch();
+        double yawRad = Math.toRadians(yaw), pitchRad = Math.toRadians(pitch);
+        double lx = -Math.sin(yawRad) * Math.cos(pitchRad);
+        double ly = -Math.sin(pitchRad);
+        double lz = Math.cos(yawRad) * Math.cos(pitchRad);
+        Vec3d look = new Vec3d(lx, ly, lz);
+        Vec3d right = look.crossProduct(new Vec3d(0, 1, 0));
+        if (right.lengthSquared() < 1e-6) right = new Vec3d(1, 0, 0);
+        right = right.normalize();
+        Vec3d up = right.crossProduct(look).normalize();
+        double fov = Math.toRadians(client.options.getFov().getValue() * 0.5);
+        double aspect = width / (double) Math.max(1, height);
+        double nx = (mouseX / Math.max(1, width) * 2 - 1) * Math.tan(fov) * aspect;
+        double ny = (1 - mouseY / Math.max(1, height) * 2) * Math.tan(fov);
+        Vec3d dir = look.add(right.multiply(nx)).add(up.multiply(ny)).normalize();
+        if (Math.abs(dir.y) < 1e-5) return null;
+        double planeY = pos.getY() + 0.16;
+        double t = (planeY - eye.y) / dir.y;
+        if (t < 0.05 || t > 32) return null;
+        return eye.add(dir.multiply(t));
+    }
     private boolean contains(Fan card, double x, double y) {
         double angle = Math.toRadians(-card.angle), dx = x - card.x, dy = y - card.y;
         double localX = dx * Math.cos(angle) - dy * Math.sin(angle);
@@ -126,23 +187,25 @@ public final class TableScreen extends Screen {
         if (mouseX != lastMouseX || mouseY != lastMouseY) {
             int hover = cardAt(mouseX, mouseY);
             if (hover >= 0) selected = hover;
+            hoverPiece = hover >= 0 ? null : pieceAt(mouseX, mouseY);
             lastMouseX = mouseX; lastMouseY = mouseY;
         }
         controls.clear();
         ctx.fill(12, 12, 140, 43, INK);
         ctx.fill(12, 12, 15, 43, GOLD);
         ctx.drawText(textRenderer, "MINEBOARD", 23, 19, PAPER, false);
-        ctx.drawText(textRenderer, tr("edition"), 23, 31, MUTED, false);
+        ctx.drawText(textRenderer, tr("game." + view.gameId()), 23, 31, MUTED, false);
         String status = switch (view.phase()) {
             case LOBBY -> tr("status.lobby");
-            case PLAYING -> myTurn() ? tr("status.your_turn") : tr("status.turn", view.seats().get(view.turn()).name());
-            case FINISHED -> tr("status.winner", view.seats().get(view.winner()).name());
+            case PLAYING -> canAct() ? tr("status.your_turn")
+                : view.turn() < 0 ? tr("status.waiting") : tr("status.turn", view.seats().get(view.turn()).name());
+            case FINISHED -> view.winner() < 0 ? tr("status.tie") : tr("status.winner", view.seats().get(view.winner()).name());
         };
         int labelWidth = textRenderer.getWidth(status);
         int statusY = height < 300 ? 51 : 58;
         ctx.fill(Math.max(12, (panelX() - labelWidth) / 2 - 9), statusY - 6,
             Math.min(panelX() - 4, (panelX() + labelWidth) / 2 + 9), statusY + 15, INK);
-        ctx.drawCenteredTextWithShadow(textRenderer, status, panelX() / 2, statusY, myTurn() ? GOLD : PAPER);
+        ctx.drawCenteredTextWithShadow(textRenderer, status, panelX() / 2, statusY, canAct() ? GOLD : PAPER);
         if (!view.hand().isEmpty()) {
             List<Fan> cards = fan();
             // Distribution may enter from below; keep it out of the help strip too.
@@ -154,7 +217,7 @@ public final class TableScreen extends Screen {
             if (view.hand().size() > visibleCards()) caption += "  " + (offset + 1) + "–" + Math.min(view.hand().size(), offset + visibleCards());
             ctx.drawCenteredTextWithShadow(textRenderer, caption, width / 2, handCaptionY(), PAPER);
         } else if (view.phase() == TableGame.Phase.LOBBY) {
-            ctx.drawCenteredTextWithShadow(textRenderer, tr("lobby.hint"), panelX() / 2, height - 66, PAPER);
+            ctx.drawCenteredTextWithShadow(textRenderer, tr(view.hintKey()), panelX() / 2, height - 66, PAPER);
         }
         if (System.currentTimeMillis() < messageUntil) {
             int messageY = view.hand().isEmpty() ? height - 146 : handCaptionY() - 22;
@@ -166,7 +229,7 @@ public final class TableScreen extends Screen {
         ctx.getMatrices().translate(0, 0, 600);
         drawPanel(ctx);
         ctx.fill(0, helpTop(), width, height, 0xD0101C1F);
-        ctx.drawText(textRenderer, tr(width < 550 ? "controls.short" : "controls"), 12, height - 12, MUTED, false);
+        ctx.drawText(textRenderer, tr(width < 550 ? view.controlsKey() + ".short" : view.controlsKey()), 12, height - 12, MUTED, false);
         ctx.getMatrices().pop();
     }
     private void drawPanel(DrawContext ctx) {
@@ -175,12 +238,11 @@ public final class TableScreen extends Screen {
             ctx.fill(x, 12, x + w, 103, INK);
             ctx.fill(x, 12, x + w, 14, GOLD);
             control(ctx, x + 10, 22, w - 20, tr("menu.open"), "menu", true);
-            String counts = view.seats().get(0).count() + " / " + view.seats().get(1).count() + " " + tr("cards");
-            ctx.drawCenteredTextWithShadow(textRenderer, counts, x + w / 2, 53, MUTED);
+            ctx.drawCenteredTextWithShadow(textRenderer, seatCounts(), x + w / 2, 53, MUTED);
             if (view.phase() == TableGame.Phase.FINISHED) {
                 control(ctx, x + 10, 72, w - 20, tr("rematch"), "rematch", host());
-            } else {
-                control(ctx, x + 10, 72, w - 20, tr("draw"), "draw", myTurn());
+            } else if (view.allows("draw")) {
+                control(ctx, x + 10, 72, w - 20, tr("draw"), "draw", true);
             }
             return;
         }
@@ -188,7 +250,7 @@ public final class TableScreen extends Screen {
         ctx.fill(x, 12, x + w, 14, GOLD);
         if (view.phase() == TableGame.Phase.LOBBY) ctx.drawText(textRenderer, tr("lobby"), x + 12, 25, PAPER, false);
         else control(ctx, x + 10, 20, w - 20, tr("menu.close"), "menu", true);
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < view.seats().size(); i++) {
             TableGame.Seat seat = view.seats().get(i);
             int y = 47 + i * 39;
             ctx.fill(x + 10, y, x + w - 10, y + 33, 0xFF233438);
@@ -197,20 +259,28 @@ public final class TableScreen extends Screen {
             if (view.yourSeat() == i) name += " •";
             ctx.drawText(textRenderer, textRenderer.trimToWidth(name, w - 32), x + 19, y + 6, PAPER, false);
             String detail = seat.id() == null ? tr("available") : view.phase() == TableGame.Phase.LOBBY
-                ? tr(seat.ready() ? "ready" : "waiting") : tr("hand", seat.count());
+                ? tr(seat.ready() ? "ready" : "waiting") : tr(view.countKey(), seat.count());
             ctx.drawText(textRenderer, detail, x + 19, y + 19, seat.ready() ? 0xFF85C6A3 : MUTED, false);
         }
-        int y = 131;
+        int y = 47 + view.seats().size() * 39 + 6;
         if (view.phase() == TableGame.Phase.LOBBY) {
             if (view.yourSeat() < 0) control(ctx, x + 10, y, w - 20, tr("join"), "join",
                 view.seats().stream().anyMatch(s -> s.id() == null));
             else control(ctx, x + 10, y, w - 20, tr(view.seats().get(view.yourSeat()).ready() ? "unready" : "be_ready"), "ready", true);
             y += 27;
-            if (host()) control(ctx, x + 10, y, w - 20, tr("start"), "start", view.seats().stream().allMatch(s -> s.id() != null && s.ready()));
+            if (host()) {
+                control(ctx, x + 10, y, w - 20, tr("game.cycle", tr("game." + view.gameId())), "game", true);
+                y += 27;
+                control(ctx, x + 10, y, w - 20, tr(view.startKey()), "start", view.seats().stream().allMatch(s -> s.id() != null && s.ready()));
+            }
         } else if (view.phase() == TableGame.Phase.PLAYING) {
-            control(ctx, x + 10, y, w - 20, tr("play"), "play", playable(selected));
-            y += 27;
-            control(ctx, x + 10, y, w - 20, tr("draw"), "draw", myTurn());
+            if (view.allows("play")) {
+                control(ctx, x + 10, y, w - 20, tr("play"), "play", playable(selected));
+                y += 27;
+            }
+            if (view.allows("draw")) {
+                control(ctx, x + 10, y, w - 20, tr("draw"), "draw", true);
+            }
         } else if (host()) control(ctx, x + 10, y, w - 20, tr("rematch"), "rematch", true);
         // The bottom controls remain reachable at Minecraft's minimum GUI height (240).
         int bottom = height - 101;
@@ -253,7 +323,7 @@ public final class TableScreen extends Screen {
                 case "view" -> overview = !overview;
                 case "sway" -> sway = !sway;
                 case "menu" -> menuExpanded = !menuExpanded;
-                default -> send(c.action, selected);
+                default -> send(c.action, "play".equals(c.action) ? selected : -1);
             }
             return true;
         }
@@ -264,10 +334,20 @@ public final class TableScreen extends Screen {
             else { message = tr(myTurn() ? "error.cannot_play" : "error.not_your_turn"); messageUntil = System.currentTimeMillis() + 1800; }
             return true;
         }
+        TableGame.Piece piece = pieceAt(x, y);
+        if (piece != null) {
+            hoverPiece = piece;
+            if (view.allows(piece.action(), piece.id())) send(piece.action(), piece.id());
+            else { message = tr(myTurn() ? ("flip".equals(piece.action()) ? "error.cannot_flip" : "error.cannot_play") : "error.not_your_turn"); messageUntil = System.currentTimeMillis() + 1800; }
+            return true;
+        }
         return super.mouseClicked(x, y, button);
     }
     @Override public boolean mouseScrolled(double x, double y, double horizontal, double vertical) {
-        if (!view.hand().isEmpty()) { selected = MathHelper.clamp(selected + (vertical < 0 ? 1 : -1), 0, view.hand().size() - 1); ensureVisible(); }
+        if (overHand(x, y)) {
+            selected = MathHelper.clamp(selected + (vertical < 0 ? 1 : -1), 0, view.hand().size() - 1);
+            ensureVisible();
+        } else nudgeZoom(vertical);
         return true;
     }
     @Override public boolean keyPressed(int key, int scan, int modifiers) {
@@ -275,10 +355,17 @@ public final class TableScreen extends Screen {
             selected = MathHelper.clamp(selected + (key == GLFW.GLFW_KEY_RIGHT ? 1 : -1), 0, Math.max(0, view.hand().size() - 1));
             ensureVisible(); return true;
         }
-        if (key == GLFW.GLFW_KEY_ENTER && playable(selected)) { send("play", selected); return true; }
-        if (key == GLFW.GLFW_KEY_P && myTurn()) { send("draw", -1); return true; }
+        if (key == GLFW.GLFW_KEY_ENTER) {
+            if (playable(selected)) { send("play", selected); return true; }
+            if (hoverPiece != null && view.allows(hoverPiece.action(), hoverPiece.id())) {
+                send(hoverPiece.action(), hoverPiece.id()); return true;
+            }
+        }
+        if (key == GLFW.GLFW_KEY_P && view.allows("draw")) { send("draw", -1); return true; }
         if (key == GLFW.GLFW_KEY_V) { overview = !overview; return true; }
         if (key == GLFW.GLFW_KEY_M) { sway = !sway; return true; }
+        if (key == GLFW.GLFW_KEY_EQUAL || key == GLFW.GLFW_KEY_KP_ADD) { nudgeZoom(1); return true; }
+        if (key == GLFW.GLFW_KEY_MINUS || key == GLFW.GLFW_KEY_KP_SUBTRACT) { nudgeZoom(-1); return true; }
         if (key == GLFW.GLFW_KEY_TAB && view.phase() != TableGame.Phase.LOBBY) { menuExpanded = !menuExpanded; return true; }
         return super.keyPressed(key, scan, modifiers);
     }
@@ -286,6 +373,12 @@ public final class TableScreen extends Screen {
     public double swayY() { return allowSway() ? edge(mouseY / Math.max(1, height) * 2 - 1) : 0; }
     private boolean overPanel(double x, double y) {
         return x >= panelX() && x <= width - 12 && y >= 12 && y < (compactMenu() ? 103 : height - 25);
+    }
+    private boolean overHand(double x, double y) {
+        return !view.hand().isEmpty() && !overPanel(x, y) && y >= handCaptionY() - 8 && y < helpTop() - HAND_GAP;
+    }
+    private void nudgeZoom(double steps) {
+        zoom = MathHelper.clamp(zoom + (float) steps * 0.08f, 0, 1);
     }
     private boolean allowSway() {
         return sway && !overPanel(mouseX, mouseY) && mouseY < (view.hand().isEmpty() ? height - 125 : handCaptionY() - 8);

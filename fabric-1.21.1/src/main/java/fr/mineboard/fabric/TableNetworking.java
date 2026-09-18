@@ -1,6 +1,5 @@
 package fr.mineboard.fabric;
 
-import fr.mineboard.core.TableGame;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
@@ -65,16 +64,8 @@ public final class TableNetworking {
         int now = player.getServer().getTicks();
         if (LAST_ACTION.getOrDefault(player.getUuid(), -100) == now) return;
         LAST_ACTION.put(player.getUuid(), now);
-        TableGame game = table.game;
-        String error = switch (packet.action) {
-            case "join" -> game.join(player.getUuid(), player.getGameProfile().getName());
-            case "ready" -> game.ready(player.getUuid());
-            case "start" -> game.start(player.getUuid());
-            case "play" -> game.play(player.getUuid(), packet.card, packet.revision);
-            case "draw" -> game.draw(player.getUuid(), packet.revision);
-            case "rematch" -> game.rematch(player.getUuid());
-            default -> "invalid_action";
-        };
+        String error = table.game.apply(player.getUuid(), player.getGameProfile().getName(),
+            packet.action, packet.card, packet.revision);
         if (error.isEmpty()) broadcast(table);
         else send(player, table, error, false, false);
     }
