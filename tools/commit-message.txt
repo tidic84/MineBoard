@@ -1,3 +1,0 @@
-Rendre le tapis lisible : emprise des cartes, pions de dames et zoom.
-
-Les modeles 3D sont rectangulaires (8x12), donc la grille memoire n empile plus les cartes. Les dames dessinent un damier et des pions au lieu du paquet numerote. La molette rapproche la camera ; boardSpan prepare des plateaux plus grands. Versions alignees en 0.1.0-alpha.4.
