@@ -48,3 +48,13 @@ La disposition alpha.2 doit encore être appréciée visuellement en jeu. Le cen
 - Les premiers démarrages ont signalé les avertissements habituels des profils hors ligne (Realms/authentification) et des compteurs Windows. Aucun de ces avertissements n'a empêché le chargement du mod.
 
 Cette validation porte sur les profils de développement, pas sur une installation des JAR finaux dans un launcher standard. Le parcours visuel à deux clients ci-dessus reste à faire en 26.2, notamment le survol des cartes, la distribution, la superposition du menu, les transitions caméra et la confidentialité réseau en partie réelle. Vulkan, shaders et autres mods de caméra n'ont pas été testés.
+
+## Contrôles effectués pour alpha.4 — 19 septembre 2026
+
+- 25 tests JUnit du cœur, zéro échec : défausse, mémoire sans superposition rectangulaire, dames avec pions dédiés, draft, effets, `hasTurnAction`.
+- TableScreen 1.21.1 et 26.2 : boutons de tour lus dans `view.buttons()`, plus de Piocher/Jouer en dur.
+- Compilation Fabric 1.21.1 (main + client) et NeoForge 1.21.1.
+- Grille mémoire : emprise 8×12 seizièmes, cases disjointes, dans le tapis.
+- Dames : 64 cases + 24 pions `cell`/`token`, plus de faces 0–39.
+- Caméra : zoom molette / + −, cadrage `boardSpan`.
+- Versions Gradle et README en `0.1.0-alpha.4`. JAR produits et métadonnées internes à `0.1.0-alpha.4` : Fabric 1.21.1, NeoForge 1.21.1, Fabric 26.2, NeoForge 26.2.

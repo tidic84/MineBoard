@@ -140,4 +140,21 @@ class TableGameTest {
         assertTrue(new Card(0, 5).matches(new Card(1, 5)));
         assertFalse(new Card(0, 5).matches(new Card(1, 6)));
     }
+    @Test void viewReportsTurnActionsWithoutNamingAGame() {
+        TableGame discard = playing(1);
+        assertTrue(discard.view(A).hasTurnAction());
+        assertTrue(discard.view(A).buttons().contains("draw"));
+        assertTrue(discard.view(A).allows("draw") || !discard.view(A).playable().isEmpty());
+        TableGame memory = new TableGame(new Random(1));
+        memory.join(A, "Alice");
+        memory.apply(A, "Alice", "game", -1, 0);
+        memory.join(B, "Bob");
+        memory.ready(A);
+        memory.ready(B);
+        assertEquals("", memory.start(A));
+        assertTrue(memory.view(A).hasTurnAction());
+        assertTrue(memory.view(A).buttons().isEmpty());
+        assertFalse(memory.view(A).allows("draw"));
+        assertTrue(memory.view(A).allows("flip"));
+    }
 }

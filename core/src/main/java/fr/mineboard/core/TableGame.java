@@ -36,6 +36,11 @@ public final class TableGame {
             for (Move move : moves()) if (move.type().equals(type)) return true;
             return false;
         }
+        public boolean hasTurnAction() {
+            if (!moves().isEmpty()) return true;
+            for (String button : buttons()) if (!button.equals("rematch")) return true;
+            return false;
+        }
     }
 
     private final Random random;

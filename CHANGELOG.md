@@ -8,6 +8,7 @@
 - Grille mémoire espacée selon le rectangle 8×12 des cartes, sans superposition.
 - Dames : damier et pions 3D (dames empilées), plus de cartes numérotées.
 - Zoom de la caméra (molette sur la table, +/−). Le cadrage suit l'emprise du plateau.
+- L'écran affiche les boutons fournis par la vue, sans verbes de défausse en dur.
 
 ## 0.1.0-alpha.3 — ports Minecraft 26.2
 

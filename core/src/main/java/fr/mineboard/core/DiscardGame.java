@@ -80,9 +80,9 @@ final class DiscardGame implements Game {
                     moves.add(new TableGame.Move("play", i));
                 }
             }
+            if (!playable.isEmpty()) buttons.add("play");
             moves.add(new TableGame.Move("draw", -1));
             buttons.add("draw");
-            if (!playable.isEmpty()) buttons.add("play");
         }
         if (session.phase() == TableGame.Phase.FINISHED) buttons.add("rematch");
         view.pieces = pieces;

@@ -84,14 +84,14 @@ public final class TableScreen extends Screen {
             && (view.turn() < 0 || view.yourSeat() == view.turn());
     }
     private boolean canAct() {
-        return myTurn() && (view.allows("play") || view.allows("draw") || view.allows("flip") || view.allows("move"));
+        return myTurn() && view.hasTurnAction();
     }
     private boolean pending() { return System.currentTimeMillis() < pendingUntil; }
     private boolean playable(int index) { return view.allows("play", index); }
     private boolean host() { return view.yourSeat() >= 0 && view.yourSeat() == view.host(); }
     private void send(String action, int card) {
         if (pending()) return;
-        pendingUntil = System.currentTimeMillis() + (action.equals("flip") || action.equals("move") ? 250 : 1200);
+        pendingUntil = System.currentTimeMillis() + (view.hand().isEmpty() ? 250 : 1200);
         ClientTransport.send(new TableNetworking.Action(pos, action, card, view.revision()));
     }
     private void ensureVisible() {
@@ -241,8 +241,8 @@ public final class TableScreen extends Screen {
             ctx.drawCenteredTextWithShadow(textRenderer, seatCounts(), x + w / 2, 53, MUTED);
             if (view.phase() == TableGame.Phase.FINISHED) {
                 control(ctx, x + 10, 72, w - 20, tr("rematch"), "rematch", host());
-            } else if (view.allows("draw")) {
-                control(ctx, x + 10, 72, w - 20, tr("draw"), "draw", true);
+            } else {
+                turnControls(ctx, x + 10, 72, w - 20, true);
             }
             return;
         }
@@ -274,13 +274,7 @@ public final class TableScreen extends Screen {
                 control(ctx, x + 10, y, w - 20, tr(view.startKey()), "start", view.seats().stream().allMatch(s -> s.id() != null && s.ready()));
             }
         } else if (view.phase() == TableGame.Phase.PLAYING) {
-            if (view.allows("play")) {
-                control(ctx, x + 10, y, w - 20, tr("play"), "play", playable(selected));
-                y += 27;
-            }
-            if (view.allows("draw")) {
-                control(ctx, x + 10, y, w - 20, tr("draw"), "draw", true);
-            }
+            turnControls(ctx, x + 10, y, w - 20, false);
         } else if (host()) control(ctx, x + 10, y, w - 20, tr("rematch"), "rematch", true);
         // The bottom controls remain reachable at Minecraft's minimum GUI height (240).
         int bottom = height - 101;
@@ -290,6 +284,24 @@ public final class TableScreen extends Screen {
             control(ctx, x + 10, bottom + 25, w - 20, tr(sway ? "sway.on" : "sway.off"), "sway", true);
         }
         control(ctx, x + 10, height - 51, w - 20, tr("leave"), "leave", true);
+    }
+    private void turnControls(DrawContext ctx, int x, int y, int w, boolean single) {
+        List<String> buttons = new ArrayList<>();
+        for (String button : view.buttons()) if (!"rematch".equals(button)) buttons.add(button);
+        if (single) {
+            String chosen = null;
+            for (String button : buttons) if (!"play".equals(button)) { chosen = button; break; }
+            if (chosen == null && !buttons.isEmpty()) chosen = buttons.get(0);
+            if (chosen != null) control(ctx, x, y, w, tr(chosen), chosen, buttonReady(chosen));
+            return;
+        }
+        for (String button : buttons) {
+            control(ctx, x, y, w, tr(button), button, buttonReady(button));
+            y += 27;
+        }
+    }
+    private boolean buttonReady(String button) {
+        return "play".equals(button) ? playable(selected) : true;
     }
     private void control(DrawContext ctx, int x, int y, int w, String label, String action, boolean enabled) {
         boolean usable = enabled && (!pending() || Set.of("leave", "view", "sway", "menu").contains(action));
