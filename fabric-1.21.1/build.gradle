@@ -1,0 +1,38 @@
+plugins { id 'fabric-loom' version '1.10.5' }
+base { archivesName = 'mineboard-fabric-1.21.1' }
+dependencies {
+    minecraft 'com.mojang:minecraft:1.21.1'
+    mappings 'net.fabricmc:yarn:1.21.1+build.3:v2'
+    modImplementation 'net.fabricmc:fabric-loader:0.16.14'
+    modImplementation 'net.fabricmc.fabric-api:fabric-api:0.116.17+1.21.1'
+    implementation project(':core')
+    include project(':core')
+}
+loom {
+    splitEnvironmentSourceSets()
+    mods {
+        mineboard {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+    runs {
+        client { client(); name 'MineBoard - Player 1'; programArgs '--username', 'PlayerOne' }
+        clientTwo {
+            client()
+            name 'MineBoard - Player 2'
+            runDir 'run-player-two'
+            programArgs '--username', 'PlayerTwo'
+        }
+        server { server(); runDir 'run-server' }
+    }
+}
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand version: project.version }
+}
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = 21 }

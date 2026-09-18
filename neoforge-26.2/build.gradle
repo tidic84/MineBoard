@@ -1,0 +1,28 @@
+plugins { id 'net.neoforged.moddev' version '2.0.147' }
+group = 'fr.mineboard'
+version = '0.1.0-alpha.3'
+base { archivesName = 'mineboard-neoforge-26.2' }
+java { toolchain.languageVersion = JavaLanguageVersion.of(25); withSourcesJar() }
+neoForge {
+    version = '26.2.0.88'
+    runs {
+        client { client(); gameDirectory = file('run'); programArguments.addAll('--username', 'PlayerOne') }
+        clientTwo { client(); gameDirectory = file('run-player-two'); programArguments.addAll('--username', 'PlayerTwo') }
+        server { server(); gameDirectory = file('run-server'); programArgument '--nogui' }
+    }
+    mods { mineboard { sourceSet sourceSets.main } }
+}
+sourceSets.main.java.srcDirs '../core/src/main/java', '../minecraft-26.2/src/main/java', '../minecraft-26.2/src/client/java'
+sourceSets.main.resources.srcDir '../minecraft-26.2/src/main/resources'
+processResources {
+    filesMatching('assets/mineboard/models/item/*.json') {
+        filter { line -> line.replace('minecraft:block/white_concrete', 'mineboard:item/edge') }
+    }
+    from('../fabric-1.21.1/src/main/resources') { include 'assets/**', 'data/mineboard/loot_table/**' }
+    inputs.property 'version', project.version
+    filesMatching('META-INF/neoforge.mods.toml') { expand version: project.version }
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = 25 }
+
+
+tasks.named('runServer', JavaExec) { standardInput = System.in }

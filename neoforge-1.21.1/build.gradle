@@ -1,0 +1,48 @@
+plugins { id 'dev.architectury.loom' version '1.10.453' }
+group = 'fr.mineboard'
+version = '0.1.0-alpha.2'
+base { archivesName = 'mineboard-neoforge-1.21.1' }
+repositories {
+    maven { url = 'https://maven.neoforged.net/releases/' }
+    maven { url = 'https://maven.architectury.dev/' }
+    mavenCentral()
+}
+dependencies {
+    minecraft 'com.mojang:minecraft:1.21.1'
+    mappings loom.layered {
+        mappings 'net.fabricmc:yarn:1.21.1+build.3:v2'
+        mappings 'dev.architectury:yarn-mappings-patch-neoforge:1.21+build.4'
+    }
+    neoForge 'net.neoforged:neoforge:21.1.219'
+}
+
+// Compile the exact same game, screen, camera, rendering and session sources on both loaders.
+// Only registration / lifecycle / transport adapters differ. Never edit build/generated.
+def sharedSources = tasks.register('syncSharedSources', Sync) {
+    from('../fabric-1.21.1/src/main/java') {
+        exclude '**/MineBoard.java', '**/FabricNetworking.java'
+    }
+    from('../fabric-1.21.1/src/client/java') { exclude '**/MineBoardClient.java' }
+    from('../core/src/main/java')
+    into layout.buildDirectory.dir('generated/shared/java')
+}
+sourceSets.main.java.srcDir sharedSources
+sourceSets.main.resources.srcDir '../fabric-1.21.1/src/main/resources'
+processResources {
+    exclude 'fabric.mod.json'
+    inputs.property 'version', project.version
+    filesMatching('META-INF/neoforge.mods.toml') { expand version: project.version }
+}
+loom {
+    runs {
+        client { client(); programArgs '--username', 'NeoPlayerOne' }
+        clientTwo { client(); runDir 'run-player-two'; programArgs '--username', 'NeoPlayerTwo' }
+        smokeClient { client(); runDir 'run-smoke-client'; programArgs '--username', 'NeoSmoke', '--quickPlayMultiplayer', '127.0.0.1:25576' }
+        server { server(); runDir 'run-server' }
+    }
+}
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = 21 }

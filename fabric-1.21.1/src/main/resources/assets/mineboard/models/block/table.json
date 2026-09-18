@@ -1,0 +1,73 @@
+{
+    "textures":  {
+                     "wood":  "minecraft:block/dark_oak_planks",
+                     "felt":  "mineboard:block/felt",
+                     "particle":  "minecraft:block/dark_oak_planks"
+                 },
+    "elements":  [
+                     {
+                         "faces":  {
+                                       "south":  {
+                                                     "texture":  "#wood"
+                                                 },
+                                       "north":  {
+                                                     "texture":  "#wood"
+                                                 },
+                                       "up":  {
+                                                  "texture":  "#wood"
+                                              },
+                                       "west":  {
+                                                    "texture":  "#wood"
+                                                },
+                                       "down":  {
+                                                    "texture":  "#wood"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#wood"
+                                                }
+                                   },
+                         "from":  [
+                                      0,
+                                      0,
+                                      0
+                                  ],
+                         "to":  [
+                                    16,
+                                    1.8,
+                                    16
+                                ]
+                     },
+                     {
+                         "faces":  {
+                                       "south":  {
+                                                     "texture":  "#felt"
+                                                 },
+                                       "north":  {
+                                                     "texture":  "#felt"
+                                                 },
+                                       "up":  {
+                                                  "texture":  "#felt"
+                                              },
+                                       "west":  {
+                                                    "texture":  "#felt"
+                                                },
+                                       "down":  {
+                                                    "texture":  "#felt"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#felt"
+                                                }
+                                   },
+                         "from":  [
+                                      0.5,
+                                      1.8,
+                                      0.5
+                                  ],
+                         "to":  [
+                                    15.5,
+                                    2.1,
+                                    15.5
+                                ]
+                     }
+                 ]
+}

@@ -1,0 +1,17 @@
+{
+    "parent":  "mineboard:block/table",
+    "display":  {
+                    "gui":  {
+                                "scale":  [
+                                              0.8,
+                                              0.8,
+                                              0.8
+                                          ],
+                                "rotation":  [
+                                                 30,
+                                                 45,
+                                                 0
+                                             ]
+                            }
+                }
+}

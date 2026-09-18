@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["PPP", "WCW"],
+  "key": {"P":{"item":"minecraft:paper"},"W":{"tag":"minecraft:planks"},"C":{"item":"minecraft:green_carpet"}},
+  "result": {"id":"mineboard:table","count":1}
+}

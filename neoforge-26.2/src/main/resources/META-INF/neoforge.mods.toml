@@ -1,0 +1,22 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="All Rights Reserved"
+[[mods]]
+modId="mineboard"
+version="${version}"
+displayName="MineBoard"
+description='''Jeux de cartes en 3D autour d'une table.'''
+[[mixins]]
+config="mineboard.26.mixins.json"
+[[dependencies.mineboard]]
+modId="neoforge"
+type="required"
+versionRange="[26.2.0.88,)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.mineboard]]
+modId="minecraft"
+type="required"
+versionRange="[26.2,26.3)"
+ordering="NONE"
+side="BOTH"

@@ -1,0 +1,35 @@
+plugins { id 'net.fabricmc.fabric-loom' version '1.17.20' }
+group = 'fr.mineboard'
+version = '0.1.0-alpha.3'
+base { archivesName = 'mineboard-fabric-26.2' }
+repositories { mavenCentral() }
+dependencies {
+    minecraft 'com.mojang:minecraft:26.2'
+    implementation 'net.fabricmc:fabric-loader:0.19.5'
+    implementation 'net.fabricmc.fabric-api:fabric-api:0.160.0+26.2'
+}
+loom {
+    splitEnvironmentSourceSets()
+    mods { mineboard { sourceSet sourceSets.main; sourceSet sourceSets.client } }
+    runs {
+        client { client(); programArgs '--username', 'PlayerOne' }
+        clientTwo { client(); runDir 'run-player-two'; programArgs '--username', 'PlayerTwo' }
+        server { server(); runDir 'run-server' }
+    }
+}
+sourceSets.main.java.srcDirs '../core/src/main/java', '../minecraft-26.2/src/main/java'
+sourceSets.client.java.srcDir '../minecraft-26.2/src/client/java'
+sourceSets.main.resources.srcDir '../minecraft-26.2/src/main/resources'
+processResources {
+    filesMatching('assets/mineboard/models/item/*.json') {
+        filter { line -> line.replace('minecraft:block/white_concrete', 'mineboard:item/edge') }
+    }
+    from('../fabric-1.21.1/src/main/resources') {
+        include 'assets/**', 'data/mineboard/loot_table/**'
+    }
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand version: project.version }
+}
+java { toolchain.languageVersion = JavaLanguageVersion.of(25); withSourcesJar() }
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = 25 }
+

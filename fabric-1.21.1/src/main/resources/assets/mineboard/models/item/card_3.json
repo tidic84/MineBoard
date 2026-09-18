@@ -1,0 +1,134 @@
+{
+    "gui_light":  "front",
+    "display":  {
+                    "fixed":  {
+                                  "scale":  [
+                                                1,
+                                                1,
+                                                1
+                                            ],
+                                  "rotation":  [
+                                                   90,
+                                                   0,
+                                                   0
+                                               ]
+                              },
+                    "gui":  {
+                                "translation":  [
+                                                    0,
+                                                    0,
+                                                    0
+                                                ],
+                                "rotation":  [
+                                                 90,
+                                                 0,
+                                                 0
+                                             ],
+                                "scale":  [
+                                              1,
+                                              1,
+                                              1
+                                          ]
+                            },
+                    "ground":  {
+                                   "scale":  [
+                                                 0.5,
+                                                 0.5,
+                                                 0.5
+                                             ]
+                               },
+                    "firstperson_righthand":  {
+                                                  "translation":  [
+                                                                      0,
+                                                                      2,
+                                                                      0
+                                                                  ],
+                                                  "rotation":  [
+                                                                   80,
+                                                                   0,
+                                                                   0
+                                                               ],
+                                                  "scale":  [
+                                                                1,
+                                                                1,
+                                                                1
+                                                            ]
+                                              }
+                },
+    "elements":  [
+                     {
+                         "faces":  {
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                1
+                                                            ],
+                                                     "texture":  "#edge"
+                                                 },
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                1
+                                                            ],
+                                                     "texture":  "#edge"
+                                                 },
+                                       "up":  {
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ],
+                                                  "texture":  "#front"
+                                              },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               1
+                                                           ],
+                                                    "texture":  "#edge"
+                                                },
+                                       "down":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ],
+                                                    "texture":  "#back"
+                                                },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               1
+                                                           ],
+                                                    "texture":  "#edge"
+                                                }
+                                   },
+                         "from":  [
+                                      4,
+                                      7.85,
+                                      2
+                                  ],
+                         "to":  [
+                                    12,
+                                    8.15,
+                                    14
+                                ]
+                     }
+                 ],
+    "textures":  {
+                     "back":  "mineboard:item/back",
+                     "front":  "mineboard:item/card_3",
+                     "edge":  "minecraft:block/white_concrete",
+                     "particle":  "mineboard:item/card_3"
+                 }
+}

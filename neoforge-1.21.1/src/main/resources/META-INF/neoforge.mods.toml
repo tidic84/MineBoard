@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="All-Rights-Reserved"
+
+[[mods]]
+modId="mineboard"
+version="${version}"
+displayName="MineBoard"
+authors="MineBoard"
+description='''Des jeux de cartes autour d'une vraie table. Prototype à deux places.'''
+
+[[mixins]]
+config="mineboard.client.mixins.json"
+
+[[dependencies.mineboard]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.219,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.mineboard]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1,1.21.2)"
+ordering="NONE"
+side="BOTH"

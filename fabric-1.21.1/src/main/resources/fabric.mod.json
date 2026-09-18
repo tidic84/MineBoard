@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "mineboard",
+  "version": "${version}",
+  "name": "MineBoard",
+  "description": "Des jeux de cartes autour d'une vraie table. Prototype multijoueur à deux places.",
+  "authors": ["MineBoard"],
+  "environment": "*",
+  "entrypoints": {
+    "main": ["fr.mineboard.fabric.MineBoard"],
+    "client": ["fr.mineboard.fabric.client.MineBoardClient"]
+  },
+  "mixins": [{ "config": "mineboard.client.mixins.json", "environment": "client" }],
+  "depends": { "fabricloader": ">=0.16.14", "minecraft": "~1.21.1", "java": ">=21", "fabric-api": "*" },
+  "license": "All-Rights-Reserved"
+}
