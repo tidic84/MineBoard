@@ -15,13 +15,14 @@ public final class TableGame {
     public record View(long revision, Phase phase, List<Seat> seats, int yourSeat,
                        int turn, int topCard, int deckCount, List<Integer> hand,
                        int winner, int lastActor, String event, String gameId, String countKey,
-                       String hintKey, String controlsKey, String startKey, int host, double boardSpan,
+                       String hintKey, String controlsKey, String startKey, int host, int minSeats, double boardSpan,
                        List<Integer> playable, List<String> buttons, List<Piece> pieces, List<Move> moves) {
         public String gameId() { return gameId == null || gameId.isEmpty() ? Games.DISCARD : gameId; }
         public String countKey() { return countKey == null || countKey.isEmpty() ? "hand" : countKey; }
         public String hintKey() { return hintKey == null || hintKey.isEmpty() ? "lobby.hint" : hintKey; }
         public String controlsKey() { return controlsKey == null || controlsKey.isEmpty() ? "controls" : controlsKey; }
         public String startKey() { return startKey == null || startKey.isEmpty() ? "start" : startKey; }
+        public int minSeats() { return minSeats <= 0 ? 2 : minSeats; }
         public double boardSpan() { return boardSpan <= 0 ? 1 : boardSpan; }
         public List<Integer> playable() { return playable == null ? List.of() : playable; }
         public List<String> buttons() { return buttons == null ? List.of() : buttons; }
@@ -50,7 +51,7 @@ public final class TableGame {
     public TableGame(Random random) {
         this.random = Objects.requireNonNull(random);
         this.game = Games.create(Games.DISCARD);
-        this.session = new TableSession(game.seats());
+        this.session = new TableSession(game.maxSeats());
     }
     public String id() { return game.id(); }
     public int seatOf(UUID id) { return session.seatOf(id); }
@@ -59,7 +60,8 @@ public final class TableGame {
     public String start(UUID id) {
         if (session.seatOf(id) != session.host()) return "host_only";
         if (session.phase() != Phase.LOBBY) return "already_started";
-        if (!session.allReady()) return "not_ready";
+        if (!session.seatedAreReady() || session.occupied() < game.minSeats()) return "not_ready";
+        session.compactSeats();
         game.start(session, random);
         String error = session.beginPlaying(id);
         if (error.isEmpty()) session.setTurn(game.startingTurn());
@@ -73,11 +75,17 @@ public final class TableGame {
     }
     public String rematch(UUID id) {
         String error = session.rematch(id);
-        if (error.isEmpty()) game.clear();
+        if (error.isEmpty()) {
+            game.clear();
+            session.resize(game.maxSeats());
+        }
         return error;
     }
     public void leave(UUID id) {
-        if (session.leave(id)) game.clear();
+        if (session.leave(id)) {
+            game.clear();
+            session.resize(game.maxSeats());
+        }
     }
     public String apply(UUID id, String name, String type, int target, long revision) {
         return switch (type) {
@@ -96,7 +104,7 @@ public final class TableGame {
         return new View(session.revision(), session.phase(), List.copyOf(session.seats(build.counts)), seat,
             session.turn(), build.topCard, build.deckCount, List.copyOf(build.hand),
             session.winner(), session.lastActor(), session.event(), game.id(), game.countKey(),
-            game.hintKey(), game.controlsKey(), game.startKey(), session.host(), game.boardSpan(),
+            game.hintKey(), game.controlsKey(), game.startKey(), session.host(), game.minSeats(), game.boardSpan(),
             List.copyOf(build.playable), List.copyOf(build.buttons), List.copyOf(build.pieces), List.copyOf(build.moves));
     }
     Game rules() { return game; }
@@ -105,7 +113,7 @@ public final class TableGame {
         if (session.seatOf(id) != session.host()) return "host_only";
         game.clear();
         game = Games.create(Games.next(game.id()));
-        session.resize(game.seats());
+        session.resize(game.maxSeats());
         session.unreadyAll();
         session.changed("game", session.host());
         return "";

@@ -4,7 +4,9 @@
 
 `gradlew build` compile le serveur et le client, exécute les tests du cœur, puis produit le JAR Fabric remappé contenant le cœur.
 
-`TableGameTest` vérifie la défausse : lancement, hôte, confidentialité, coups périmés, pioche, recyclage et 100 parties. `MemoryGameTest`, `EffectsGameTest`, `CheckersGameTest`, `DraftGameTest` et `LayoutsTest` couvrent les autres jeux et la géométrie du plateau (paires, effets 0/2, ouverture des dames, draft simultané, cartes mémoire sans superposition, pions distincts des cartes).
+`powershell -NoProfile -File tools/Validate-Assets.ps1` contrôle les textures locales, les correspondances des 27 modèles de plateau entre 1.21.1 et 26.2, les six silhouettes d'échecs distinctes et l'absence d'intersection des volumes des pions, pièces d'échecs et plaques. Lancer aussi ce contrôle après `tools/Generate-Assets.ps1`.
+
+`TableGameTest` vérifie la défausse : lancement, hôte, confidentialité, coups périmés, pioche, recyclage et 100 parties. `MemoryGameTest`, `EffectsGameTest`, `CheckersGameTest`, `DraftGameTest`, `AgesGameTest`, `ChessGameTest` et `LayoutsTest` couvrent les autres jeux et la géométrie du plateau (paires, effets 0/2, ouverture des dames, draft simultané, cités des âges, échecs, cartes mémoire sans superposition, pions distincts des cartes). `PieceMotionTest` couvre le glissement des pièces et le saut des cartes.
 
 ## Parcours manuel à deux clients
 
@@ -58,3 +60,24 @@ Cette validation porte sur les profils de développement, pas sur une installati
 - Dames : 64 cases + 24 pions `cell`/`token`, plus de faces 0–39.
 - Caméra : zoom molette / + −, cadrage `boardSpan`.
 - Versions Gradle et README en `0.1.0-alpha.4`. JAR produits et métadonnées internes à `0.1.0-alpha.4` : Fabric 1.21.1, NeoForge 1.21.1, Fabric 26.2, NeoForge 26.2.
+
+## Revue des corrections — 19 septembre 2026
+
+- 34 tests JUnit réussis, dont neuf nouveaux cas : lobby et départ du draft, révisions de choix simultanés, prises et rafles obligatoires, désélection, clic des cartes tournées, cadrage et espacement du draft complet.
+- Builds Fabric et NeoForge, en 1.21.1 et 26.2, réussis. Les quatre JAR restent en alpha.4.
+- Génération complète des assets dans un répertoire de test séparé, suivie de `Validate-Assets.ps1` : succès. Deux régénérations des textures de cases et de pions donnent les mêmes SHA-256.
+- Client Fabric 1.21.1 : chargement des ressources, entrée dans un monde plat de test séparé, ouverture du tapis et cycle jusqu'au lobby Draft sans erreur. Boutons Prêt / Jeu / Distribuer / Quitter distincts à 240 pixels GUI de hauteur.
+- Inspection visuelle dans Minecraft des modèles de damier, pions, dames et cartes, à l'aide d'une scène locale d'entités `item_display` utilisant les modèles et les échelles du jeu. Cette scène vérifie les assets ; elle ne remplace pas un essai complet du rendu de partie et du réseau.
+- Le deuxième client a planté deux fois dans `glfw.dll` (`EXCEPTION_ACCESS_VIOLATION`) lors de son activation. Aucun nouvel essai multijoueur complet n'est donc revendiqué. Le rendu en jeu de 26.2 reste à contrôler ; sa compilation a été vérifiée.
+
+## Revue après la fin de Grok — 19 septembre 2026
+
+- 67 tests JUnit, zéro échec, erreur ou test ignoré. Les 17 régressions ajoutées couvrent notamment le roque sous attaque de pion, les rois espacés de deux cases, les faux matériels insuffisants, la priorité du mat, les identifiants des mains cachées, le commerce limité aux quantités disponibles, la récupération gratuite et les animations de prises.
+- Parties complètes simulées de Cités des âges pour chacun des effectifs de 3 à 7 joueurs.
+- Builds finaux réussis : Fabric 1.21.1 et NeoForge 1.21.1 sous Java 21 ; Fabric 26.2 et NeoForge 26.2 sous Java 25. Les JAR restent en alpha.4 dans les dossiers `build/libs` respectifs.
+- `Validate-Assets.ps1` réussi : 27 correspondances de modèles entre versions, textures présentes, six silhouettes d'échecs différentes et volumes sans intersection. Le validateur utilise explicitement des nombres flottants pour ne pas arrondir les coordonnées mixtes entières/décimales.
+- Génération complète dans `build/review/asset-regeneration`, puis validation : succès. Les 21 nouveaux modèles ont la même géométrie JSON que les sources ; leurs 21 textures sont identiques octet pour octet.
+- Clés de traduction FR/EN identiques, avec les noms des 78 cartes distinctes et les 25 effets spéciaux. `git diff --check` réussi.
+- Aperçus des volumes JSON et textures examinés : `build/review/chess-models.png` et `build/review/board-models.png`. Régénération par `python tools/Preview-Models.py` avec Pillow sous Windows. Cet aperçu applique un éclairage simplifié et une couleur moyenne par face ; il ne reproduit pas le moteur Minecraft.
+
+Aucun client Minecraft ni essai multijoueur n'a été lancé pendant cette revue. Les captures et essais en jeu des sections précédentes sont historiques. Restent à valider en jeu : cadrage des cités à sept joueurs, survol des cartes à grande échelle GUI, sélection des pièces hautes, transitions caméra et transport réseau. Les illustrations de cités distinguent les familles ; les informations propres à chaque carte sont affichées au survol.

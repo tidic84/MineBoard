@@ -71,6 +71,37 @@ public final class TableSession {
         for (int i = 0; i < players.length; i++) if (players[i] == null || !ready[i]) return false;
         return players.length > 0;
     }
+    public int occupied() {
+        int count = 0;
+        for (UUID player : players) if (player != null) count++;
+        return count;
+    }
+    public boolean seatedAreReady() {
+        boolean any = false;
+        for (int i = 0; i < players.length; i++) {
+            if (players[i] == null) continue;
+            any = true;
+            if (!ready[i]) return false;
+        }
+        return any;
+    }
+    public void compactSeats() {
+        int write = 0;
+        for (int read = 0; read < players.length; read++) {
+            if (players[read] == null) continue;
+            if (write != read) {
+                players[write] = players[read];
+                names[write] = names[read];
+                ready[write] = ready[read];
+                players[read] = null;
+                names[read] = "";
+                ready[read] = false;
+            }
+            write++;
+        }
+        if (write == 0) write = 1;
+        if (write != players.length) resize(write);
+    }
     public String beginPlaying(UUID id) {
         if (seatOf(id) != host()) return "host_only";
         if (phase != TableGame.Phase.LOBBY) return "already_started";

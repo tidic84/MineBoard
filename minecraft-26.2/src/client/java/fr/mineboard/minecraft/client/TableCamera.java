@@ -34,8 +34,9 @@ public final class TableCamera {
         if (screen == null || exiting) {
             exit(); target = new Pose(vanilla.position(), vanilla.yRot(), vanilla.xRot());
         } else {
-            int seat = screen.view().yourSeat();
-            boolean overview = screen.overview() || seat < 0;
+            int seat = screen.focusSeat();
+            boolean overview = screen.overview() || screen.view().yourSeat() < 0;
+            int count = Math.max(1, screen.view().seats().size());
             if (lastSeat != seat || lastOverview != overview) {
                 from = displayed; transition = now; lastSeat = seat; lastOverview = overview;
             }
@@ -47,15 +48,23 @@ public final class TableCamera {
             BlockPos pos = screen.pos();
             double span = Math.max(screen.view().boardSpan(), Layouts.span(screen.view().pieces()));
             Vec3 center = new Vec3(pos.getX() + .5, pos.getY() + .16, pos.getZ() + .5);
+            Vec3 lookAt = center;
             Vec3 eye;
             if (overview) {
                 eye = center.add(0, lerp(2.5, 0.92, zoom) * span, lerp(1.0, 0.22, zoom) * span);
-            } else {
+            } else if (count <= 2) {
                 double height = lerp(1.04, 0.42, zoom) * span;
                 double back = lerp(1.55, 0.68, zoom) * span;
                 eye = center.add(0, height, seat == 0 ? back : -back);
+            } else {
+                double[] local = Layouts.seatCenter(seat, count);
+                lookAt = new Vec3(pos.getX() + local[0], pos.getY() + .16, pos.getZ() + local[1]);
+                double ang = Math.toRadians(Layouts.seatYaw(seat, count));
+                double height = lerp(1.05, 0.48, zoom);
+                double back = lerp(1.2, 0.58, zoom);
+                eye = lookAt.add(Math.sin(ang) * back, height, Math.cos(ang) * back);
             }
-            Vec3 direction = center.subtract(eye);
+            Vec3 direction = lookAt.subtract(eye);
             float yaw = (float) Math.toDegrees(Math.atan2(-direction.x, direction.z));
             float pitch = (float) -Math.toDegrees(Math.atan2(direction.y, direction.horizontalDistance()));
             target = new Pose(eye, yaw + (float) swayX * 4, pitch + (float) swayY * 2.5f);

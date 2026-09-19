@@ -1,6 +1,7 @@
 package fr.mineboard.minecraft.client;
 
 import fr.mineboard.core.Layouts;
+import fr.mineboard.core.PieceMotion;
 import fr.mineboard.core.TableGame;
 import fr.mineboard.minecraft.*;
 import net.minecraft.client.renderer.blockentity.*;
@@ -18,11 +19,11 @@ import net.minecraft.world.phys.Vec3;
 import java.util.*;
 
 public final class TableRenderer implements BlockEntityRenderer<TableBlockEntity, TableRenderer.State> {
-    private static final ItemStack[] MODELS = new ItemStack[47];
+    private static final ItemStack[] MODELS = new ItemStack[68];
     private final ItemModelResolver models;
     public TableRenderer(BlockEntityRendererProvider.Context context) { models = context.itemModelResolver(); }
     public static ItemStack card(int id) {
-        return model(id < 0 ? "card" : "card_" + id);
+        return model(Layouts.handItemModel(id));
     }
     public static ItemStack piece(TableGame.Piece piece) {
         return model(Layouts.itemModel(piece.kind(), piece.card()));
@@ -45,8 +46,21 @@ public final class TableRenderer implements BlockEntityRenderer<TableBlockEntity
             case "token_dark" -> 44;
             case "token_king_light" -> 45;
             case "token_king_dark" -> 46;
-            default -> name.startsWith("card_") ? Integer.parseInt(name.substring(5)) + 1 : 0;
+            case "wonder" -> 66;
+            case "coin" -> 67;
+            default -> named(name);
         };
+    }
+    private static int named(String name) {
+        if (name.startsWith("card_")) return Integer.parseInt(name.substring(5)) + 1;
+        String[] ages = { "brown", "grey", "yellow", "blue", "green", "red", "purple" };
+        for (int i = 0; i < ages.length; i++) if (name.equals("ages_" + ages[i])) return 59 + i;
+        String[] chess = { "pawn", "knight", "bishop", "rook", "queen", "king" };
+        for (int i = 0; i < chess.length; i++) {
+            if (name.equals("chess_" + chess[i] + "_light")) return 47 + i;
+            if (name.equals("chess_" + chess[i] + "_dark")) return 53 + i;
+        }
+        return 0;
     }
     private record CardRender(ItemStackRenderState item, double x, double y, double z, float angle, float scale) {}
     public static final class State extends BlockEntityRenderState {
@@ -58,19 +72,11 @@ public final class TableRenderer implements BlockEntityRenderer<TableBlockEntity
         BlockEntityRenderer.super.extractRenderState(table, state, delta, camera, breaking);
         state.cards.clear();
         TableGame.View view = table.publicView();
-        double t = Math.min(1, (System.nanoTime() - table.visualUpdateNanos) / 550_000_000.0);
-        boolean animated = view.event().equals("played") && t < 1 && view.topCard() >= 0;
+        double t = Math.min(1, (System.nanoTime() - table.visualUpdateNanos) / 520_000_000.0);
+        List<TableGame.Piece> previous = table.previousView == null ? List.of() : table.previousView.pieces();
         for (TableGame.Piece piece : view.pieces()) {
-            if (animated && "discard".equals(piece.kind())) continue;
-            add(state, table, piece(piece), piece.x(), piece.y(), piece.z(), piece.angle(), piece.scale());
-        }
-        if (animated) {
-            if (table.previousTop >= 0) add(state, table, card(table.previousTop), .67, .165, .5, 8, .46f);
-            double ease = 1 - Math.pow(1 - t, 3);
-            double z = (view.lastActor() == 0 ? .93 : .07) * (1 - ease) + .5 * ease;
-            double x = .5 * (1 - ease) + .67 * ease;
-            double y = .18 + Math.sin(t * Math.PI) * .2;
-            add(state, table, card(view.topCard()), x, y, z, 8, .46f);
+            TableGame.Piece pose = PieceMotion.pose(previous, view.pieces(), piece, t);
+            add(state, table, piece(pose), pose.x(), pose.y(), pose.z(), pose.angle(), pose.scale());
         }
     }
     private void add(State state, TableBlockEntity table, ItemStack stack, double x, double y, double z, float angle, float scale) {

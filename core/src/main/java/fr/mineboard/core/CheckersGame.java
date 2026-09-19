@@ -34,19 +34,19 @@ final class CheckersGame implements Game {
         if (target < 0 || target > 63) return "invalid_card";
         int seat = session.seatOf(player);
         int side = seat == 0 ? 1 : -1;
+        if (target == selected && !jumping) {
+            selected = -1;
+            session.changed("select", seat);
+            return "";
+        }
         if (selected < 0 || (!jumping && owner(board[target]) == side)) {
             if (owner(board[target]) != side) return "cannot_play";
             selected = target;
             session.changed("select", seat);
             return "";
         }
-        if (target == selected && !jumping) {
-            selected = -1;
-            session.changed("select", seat);
-            return "";
-        }
         List<int[]> jumps = jumpsFrom(selected, side);
-        List<int[]> steps = jumps.isEmpty() && anyJump(side) ? List.of() : stepsFrom(selected, side);
+        List<int[]> steps = jumping || anyJump(side) ? List.of() : stepsFrom(selected, side);
         int[] chosen = null;
         for (int[] move : jumps) if (move[1] == target) chosen = move;
         if (chosen == null) for (int[] move : steps) if (move[1] == target) chosen = move;
@@ -90,11 +90,11 @@ final class CheckersGame implements Game {
                 double x = Layouts.CHECKER_ORIGIN + col * Layouts.CHECKER_CELL;
                 double z = Layouts.CHECKER_ORIGIN + (7 - row) * Layouts.CHECKER_CELL;
                 String action = can && dark ? "move" : "";
-                pieces.add(new TableGame.Piece(square, dark ? 1 : 0, x, 0.152, z, 0, (float) Layouts.CHECKER_CELL, "cell", action));
+                pieces.add(new TableGame.Piece(square, dark ? 1 : 0, x, 0.132, z, 0, (float) Layouts.CHECKER_CELL, "cell", action));
                 int value = board[square];
                 if (value != 0) {
                     boolean lifted = selected == square;
-                    pieces.add(new TableGame.Piece(square, value, x, lifted ? 0.195 : 0.168, z, 0,
+                    pieces.add(new TableGame.Piece(square, value, x, lifted ? 0.175 : 0.141, z, 0,
                         lifted ? Layouts.CHECKER_TOKEN * 1.12f : Layouts.CHECKER_TOKEN, "token", can ? "move" : ""));
                 }
                 if (can && dark) moves.add(new TableGame.Move("move", square));

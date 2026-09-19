@@ -17,6 +17,7 @@ public final class TableBlockEntity extends BlockEntity {
     private TableGame.View publicView = game.view(null);
     public long visualUpdateNanos;
     public int previousTop = -1;
+    public TableGame.View previousView;
     public TableBlockEntity(BlockPos pos, BlockState state) { super(MineBoard.TABLE_ENTITY, pos, state); }
     public TableGame.View publicView() { return publicView; }
     public void syncPublic() {
@@ -33,6 +34,7 @@ public final class TableBlockEntity extends BlockEntity {
         super.readNbt(nbt, lookup);
         if (nbt.contains("PublicView")) {
             previousTop = publicView.topCard();
+            previousView = publicView;
             TableGame.View next = JSON.fromJson(nbt.getString("PublicView"), TableGame.View.class);
             if (next.revision() != publicView.revision()) visualUpdateNanos = System.nanoTime();
             publicView = next;

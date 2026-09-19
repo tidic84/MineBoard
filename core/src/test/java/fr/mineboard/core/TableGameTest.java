@@ -34,6 +34,11 @@ class TableGameTest {
         assertEquals(65, game.view(A).deckCount());
         assertThrows(UnsupportedOperationException.class, () -> game.view(A).hand().clear());
     }
+    @Test void hiddenPieceIdentifiersDoNotEncodeTheDeckOrderOrFaces() {
+        var first = playing(1).view(null).pieces().stream().filter(p -> p.card() == -1).toList();
+        var second = playing(2).view(null).pieces().stream().filter(p -> p.card() == -1).toList();
+        assertEquals(first, second);
+    }
     @Test void staleAndUnauthorizedInputsCannotChangeGame() {
         TableGame game = playing(3);
         TableGame.View before = game.view(A);

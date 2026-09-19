@@ -1,281 +1,407 @@
 {
-    "parent":  "mineboard:item/back",
-    "overrides":  [
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  1
-                                        },
-                          "model":  "mineboard:item/card_0"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  2
-                                        },
-                          "model":  "mineboard:item/card_1"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  3
-                                        },
-                          "model":  "mineboard:item/card_2"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  4
-                                        },
-                          "model":  "mineboard:item/card_3"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  5
-                                        },
-                          "model":  "mineboard:item/card_4"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  6
-                                        },
-                          "model":  "mineboard:item/card_5"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  7
-                                        },
-                          "model":  "mineboard:item/card_6"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  8
-                                        },
-                          "model":  "mineboard:item/card_7"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  9
-                                        },
-                          "model":  "mineboard:item/card_8"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  10
-                                        },
-                          "model":  "mineboard:item/card_9"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  11
-                                        },
-                          "model":  "mineboard:item/card_10"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  12
-                                        },
-                          "model":  "mineboard:item/card_11"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  13
-                                        },
-                          "model":  "mineboard:item/card_12"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  14
-                                        },
-                          "model":  "mineboard:item/card_13"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  15
-                                        },
-                          "model":  "mineboard:item/card_14"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  16
-                                        },
-                          "model":  "mineboard:item/card_15"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  17
-                                        },
-                          "model":  "mineboard:item/card_16"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  18
-                                        },
-                          "model":  "mineboard:item/card_17"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  19
-                                        },
-                          "model":  "mineboard:item/card_18"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  20
-                                        },
-                          "model":  "mineboard:item/card_19"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  21
-                                        },
-                          "model":  "mineboard:item/card_20"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  22
-                                        },
-                          "model":  "mineboard:item/card_21"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  23
-                                        },
-                          "model":  "mineboard:item/card_22"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  24
-                                        },
-                          "model":  "mineboard:item/card_23"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  25
-                                        },
-                          "model":  "mineboard:item/card_24"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  26
-                                        },
-                          "model":  "mineboard:item/card_25"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  27
-                                        },
-                          "model":  "mineboard:item/card_26"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  28
-                                        },
-                          "model":  "mineboard:item/card_27"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  29
-                                        },
-                          "model":  "mineboard:item/card_28"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  30
-                                        },
-                          "model":  "mineboard:item/card_29"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  31
-                                        },
-                          "model":  "mineboard:item/card_30"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  32
-                                        },
-                          "model":  "mineboard:item/card_31"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  33
-                                        },
-                          "model":  "mineboard:item/card_32"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  34
-                                        },
-                          "model":  "mineboard:item/card_33"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  35
-                                        },
-                          "model":  "mineboard:item/card_34"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  36
-                                        },
-                          "model":  "mineboard:item/card_35"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  37
-                                        },
-                          "model":  "mineboard:item/card_36"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  38
-                                        },
-                          "model":  "mineboard:item/card_37"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  39
-                                        },
-                          "model":  "mineboard:item/card_38"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  40
-                                        },
-                          "model":  "mineboard:item/card_39"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  41
-                                        },
-                          "model":  "mineboard:item/cell_light"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  42
-                                        },
-                          "model":  "mineboard:item/cell_dark"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  43
-                                        },
-                          "model":  "mineboard:item/token_light"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  44
-                                        },
-                          "model":  "mineboard:item/token_dark"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  45
-                                        },
-                          "model":  "mineboard:item/token_king_light"
-                      },
-                      {
-                          "predicate":  {
-                                            "custom_model_data":  46
-                                        },
-                          "model":  "mineboard:item/token_king_dark"
-                      }
-                  ]
+  "parent": "mineboard:item/back",
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "mineboard:item/card_0"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2
+      },
+      "model": "mineboard:item/card_1"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 3
+      },
+      "model": "mineboard:item/card_2"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 4
+      },
+      "model": "mineboard:item/card_3"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 5
+      },
+      "model": "mineboard:item/card_4"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 6
+      },
+      "model": "mineboard:item/card_5"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 7
+      },
+      "model": "mineboard:item/card_6"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 8
+      },
+      "model": "mineboard:item/card_7"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 9
+      },
+      "model": "mineboard:item/card_8"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 10
+      },
+      "model": "mineboard:item/card_9"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 11
+      },
+      "model": "mineboard:item/card_10"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 12
+      },
+      "model": "mineboard:item/card_11"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 13
+      },
+      "model": "mineboard:item/card_12"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 14
+      },
+      "model": "mineboard:item/card_13"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 15
+      },
+      "model": "mineboard:item/card_14"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 16
+      },
+      "model": "mineboard:item/card_15"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 17
+      },
+      "model": "mineboard:item/card_16"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 18
+      },
+      "model": "mineboard:item/card_17"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 19
+      },
+      "model": "mineboard:item/card_18"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 20
+      },
+      "model": "mineboard:item/card_19"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 21
+      },
+      "model": "mineboard:item/card_20"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 22
+      },
+      "model": "mineboard:item/card_21"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 23
+      },
+      "model": "mineboard:item/card_22"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 24
+      },
+      "model": "mineboard:item/card_23"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 25
+      },
+      "model": "mineboard:item/card_24"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 26
+      },
+      "model": "mineboard:item/card_25"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 27
+      },
+      "model": "mineboard:item/card_26"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 28
+      },
+      "model": "mineboard:item/card_27"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 29
+      },
+      "model": "mineboard:item/card_28"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 30
+      },
+      "model": "mineboard:item/card_29"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 31
+      },
+      "model": "mineboard:item/card_30"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 32
+      },
+      "model": "mineboard:item/card_31"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 33
+      },
+      "model": "mineboard:item/card_32"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 34
+      },
+      "model": "mineboard:item/card_33"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 35
+      },
+      "model": "mineboard:item/card_34"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 36
+      },
+      "model": "mineboard:item/card_35"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 37
+      },
+      "model": "mineboard:item/card_36"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 38
+      },
+      "model": "mineboard:item/card_37"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 39
+      },
+      "model": "mineboard:item/card_38"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 40
+      },
+      "model": "mineboard:item/card_39"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 41
+      },
+      "model": "mineboard:item/cell_light"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 42
+      },
+      "model": "mineboard:item/cell_dark"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 43
+      },
+      "model": "mineboard:item/token_light"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 44
+      },
+      "model": "mineboard:item/token_dark"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 45
+      },
+      "model": "mineboard:item/token_king_light"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 46
+      },
+      "model": "mineboard:item/token_king_dark"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 47
+      },
+      "model": "mineboard:item/chess_pawn_light"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 48
+      },
+      "model": "mineboard:item/chess_knight_light"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 49
+      },
+      "model": "mineboard:item/chess_bishop_light"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 50
+      },
+      "model": "mineboard:item/chess_rook_light"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 51
+      },
+      "model": "mineboard:item/chess_queen_light"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 52
+      },
+      "model": "mineboard:item/chess_king_light"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 53
+      },
+      "model": "mineboard:item/chess_pawn_dark"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 54
+      },
+      "model": "mineboard:item/chess_knight_dark"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 55
+      },
+      "model": "mineboard:item/chess_bishop_dark"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 56
+      },
+      "model": "mineboard:item/chess_rook_dark"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 57
+      },
+      "model": "mineboard:item/chess_queen_dark"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 58
+      },
+      "model": "mineboard:item/chess_king_dark"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 59
+      },
+      "model": "mineboard:item/ages_brown"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 60
+      },
+      "model": "mineboard:item/ages_grey"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 61
+      },
+      "model": "mineboard:item/ages_yellow"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 62
+      },
+      "model": "mineboard:item/ages_blue"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 63
+      },
+      "model": "mineboard:item/ages_green"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 64
+      },
+      "model": "mineboard:item/ages_red"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 65
+      },
+      "model": "mineboard:item/ages_purple"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 66
+      },
+      "model": "mineboard:item/wonder"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 67
+      },
+      "model": "mineboard:item/coin"
+    }
+  ]
 }

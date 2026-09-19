@@ -25,7 +25,7 @@ Prototype de jeu de cartes en 3D dans Minecraft : tapis posé dans le monde, deu
 4. Poser le tapis sur une surface dégagée. Prévoir deux blocs libres au-dessus et autour pour la caméra.
 5. Chaque joueur fait un clic droit sur le tapis, clique sur **Prendre place**, puis **Je suis prêt**.
 6. L'hôte change de jeu dans le lobby, puis lance la manche.
-7. **Défausse** : même couleur ou même valeur. **Mémoire** : cliquer les cartes du tapis. **Défausse à effets** : 0 passe, 1 inverse, 2 fait piocher deux cartes. **Dames** : clic pour choisir un pion puis une case. **Draft** : les deux joueurs choisissent une carte en même temps.
+7. **Défausse** : même couleur ou même valeur. **Mémoire** : cliquer les cartes du tapis. **Défausse à effets** : 0 passe, 1 inverse, 2 fait piocher deux cartes. **Dames** : clic pour choisir un pion puis une case. **Draft** : les deux joueurs choisissent une carte en même temps. **Cités des âges** : 3 à 7 joueurs, plateaux, pièces, trois âges et guerre. **Échecs** : coups orthodoxes, promotion et mat.
 
 Pour NeoForge : utiliser **NeoForge 21.1.219 ou ultérieur pour Minecraft 1.21.1** et le fichier `neoforge-1.21.1/build/libs/mineboard-neoforge-1.21.1-0.1.0-alpha.4.jar` sur le serveur et les clients. Fabric API et Architectury API ne sont pas requis sur NeoForge. Choisir le JAR correspondant au loader ; ne pas installer les deux JAR à la fois. La connexion de clients Fabric à un serveur NeoForge n'est pas prise en charge par ce prototype.
 
@@ -71,11 +71,15 @@ Cinq jeux originaux, choisis dans le lobby par l'hôte.
 
 **Draft** : sept cartes, choix simultané, le reste passe à l'adversaire. Le plus haut total de chiffres gagne.
 
+**Cités des âges** : 3 à 7 places. Chaque cité a un plateau à trois étapes (ressource de départ, pièces, commerce payé aux voisins), un draft simultané sur trois âges, la guerre 1/3/5 et les sciences. `[` `]`, le bouton du menu ou un clic sur un plateau tourne la caméra vers cette cité. Survoler une carte affiche son nom, son coût, sa production, ses effets et ses chaînages ; les illustrations distinguent les sept familles.
+
+**Échecs** : roque, prise en passant, promotion et fin par mat ou pat. Les nulles par trois répétitions ou 50 coups sont automatiques dans ce prototype. Six silhouettes en volume distinguent les pièces, en ivoire et bois sombre.
+
 L'hôte peut proposer une nouvelle manche.
 
 **Quitter sa place, se déconnecter, mourir ou s'éloigner de plus de huit blocs annule la manche et remet les joueurs restants au lobby.** Les parties ne sont pas sauvegardées après redémarrage ou déchargement du bloc. Les spectateurs peuvent quitter sans annuler la partie. Le personnage reste à sa position réelle ; les places et la caméra sont virtuelles, sans siège physique ni bras animés à ce stade. Le serveur ne rend pas les joueurs invulnérables.
 
-Le tapis est un premier modèle fonctionnel, sans animation de boîte qui s'ouvre. La caméra doit disposer d'espace libre : l'évitement des murs n'est pas encore implémenté. Les raccourcis V/M/P/+/− sont fixes dans ce prototype. Le paquet de pioche est une représentation visuelle simplifiée. L'interface ne permet pas encore de cliquer directement sur la pioche 3D.
+Le tapis est un premier modèle fonctionnel, sans animation de boîte qui s'ouvre. La caméra doit disposer d'espace libre : l'évitement des murs n'est pas encore implémenté. Les raccourcis V/M/P/+/− sont fixes dans ce prototype. Le paquet de pioche est une représentation visuelle simplifiée. Le dessus de la pioche 3D est cliquable.
 
 Les faces mémoire restent celles du paquet numéroté ; un jeu de cartes dédié viendra plus tard. Un plateau plus grand (plusieurs blocs) est préparé côté caméra (`boardSpan`) mais le tapis tient encore sur un seul bloc.
 

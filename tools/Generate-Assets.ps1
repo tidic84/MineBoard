@@ -83,6 +83,8 @@ for ($id = -1; $id -lt 40; $id++) {
 }
 $overrides = @()
 for ($id=0;$id -lt 40;$id++) { $overrides += @{predicate=@{custom_model_data=($id+1)};model="mineboard:item/card_$id"} }
+$pieceNames = @('cell_light','cell_dark','token_light','token_dark','token_king_light','token_king_dark')
+for ($i=0;$i -lt $pieceNames.Count;$i++) { $overrides += @{predicate=@{custom_model_data=(41+$i)};model="mineboard:item/$($pieceNames[$i])"} }
 Write-Json 'models/item/card.json' @{parent='mineboard:item/back';overrides=$overrides}
 $bitmap = New-Object Drawing.Bitmap(128,128)
 $g = [Drawing.Graphics]::FromImage($bitmap)
@@ -115,3 +117,4 @@ Write-Json 'models/item/table.json' @{parent='mineboard:block/table';display=@{g
 $font.Dispose(); $small.Dispose(); $fmt.Dispose(); $paper.Dispose(); $ink.Dispose(); $gold.Dispose()
 Write-Host 'Generated 41 card textures, 3D models and felt board.'
 & (Join-Path $PSScriptRoot 'Generate-BoardPieces.ps1')
+& (Join-Path $PSScriptRoot 'Generate-AgeChess.ps1')

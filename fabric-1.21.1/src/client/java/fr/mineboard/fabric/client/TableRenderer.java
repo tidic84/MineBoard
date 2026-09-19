@@ -1,6 +1,7 @@
 package fr.mineboard.fabric.client;
 
 import fr.mineboard.core.Layouts;
+import fr.mineboard.core.PieceMotion;
 import fr.mineboard.core.TableGame;
 import fr.mineboard.fabric.*;
 import net.minecraft.client.MinecraftClient;
@@ -14,10 +15,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.RotationAxis;
 
 public final class TableRenderer implements BlockEntityRenderer<TableBlockEntity> {
-    private static final ItemStack[] MODELS = new ItemStack[47];
+    private static final ItemStack[] MODELS = new ItemStack[68];
     public TableRenderer(BlockEntityRendererFactory.Context context) {}
     public static ItemStack card(int id) {
-        return model(Math.max(0, Math.min(40, id + 1)));
+        return model(Layouts.handModelData(id));
     }
     public static ItemStack piece(TableGame.Piece piece) {
         return model(Layouts.customModelData(piece.kind(), piece.card()));
@@ -33,19 +34,11 @@ public final class TableRenderer implements BlockEntityRenderer<TableBlockEntity
     @Override public void render(TableBlockEntity table, float tickDelta, MatrixStack matrices,
                                  VertexConsumerProvider vertices, int light, int overlay) {
         TableGame.View view = table.publicView();
-        double t = Math.min(1, (System.nanoTime() - table.visualUpdateNanos) / 550_000_000.0);
-        boolean animated = view.event().equals("played") && t < 1 && view.topCard() >= 0;
+        double t = Math.min(1, (System.nanoTime() - table.visualUpdateNanos) / 520_000_000.0);
+        java.util.List<TableGame.Piece> previous = table.previousView == null ? java.util.List.of() : table.previousView.pieces();
         for (TableGame.Piece piece : view.pieces()) {
-            if (animated && "discard".equals(piece.kind())) continue;
-            renderStack(piece(piece), piece.x(), piece.y(), piece.z(), piece.angle(), piece.scale(), matrices, vertices, light, overlay);
-        }
-        if (animated) {
-            if (table.previousTop >= 0) renderStack(card(table.previousTop), .67, .165, .5, 8, .46f, matrices, vertices, light, overlay);
-            double ease = 1 - Math.pow(1 - t, 3);
-            double z = (view.lastActor() == 0 ? .93 : .07) * (1 - ease) + .5 * ease;
-            double x = .5 * (1 - ease) + .67 * ease;
-            double y = .18 + Math.sin(t * Math.PI) * .2;
-            renderStack(card(view.topCard()), x, y, z, 8, .46f, matrices, vertices, light, overlay);
+            TableGame.Piece pose = PieceMotion.pose(previous, view.pieces(), piece, t);
+            renderStack(piece(pose), pose.x(), pose.y(), pose.z(), pose.angle(), pose.scale(), matrices, vertices, light, overlay);
         }
     }
     private static void renderStack(ItemStack stack, double x, double y, double z, float angle, float scale,

@@ -47,6 +47,7 @@ loom {
     runs {
         client { client(); programArgs '--username', 'NeoPlayerOne' }
         clientTwo { client(); runDir 'run-player-two'; programArgs '--username', 'NeoPlayerTwo' }
+        clientThree { client(); runDir 'run-player-three'; programArgs '--username', 'NeoPlayerThree' }
         smokeClient { client(); runDir 'run-smoke-client'; programArgs '--username', 'NeoSmoke', '--quickPlayMultiplayer', '127.0.0.1:25576' }
         server { server(); runDir 'run-server' }
     }

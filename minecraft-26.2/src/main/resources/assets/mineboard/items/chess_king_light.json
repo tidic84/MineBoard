@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "mineboard:item/chess_king_light"
+  }
+}

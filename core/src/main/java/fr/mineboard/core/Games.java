@@ -8,7 +8,9 @@ public final class Games {
     public static final String EFFECTS = "effects";
     public static final String CHECKERS = "checkers";
     public static final String DRAFT = "draft";
-    private static final List<String> IDS = List.of(DISCARD, MEMORY, EFFECTS, CHECKERS, DRAFT);
+    public static final String WONDERS = "wonders";
+    public static final String CHESS = "chess";
+    private static final List<String> IDS = List.of(DISCARD, MEMORY, EFFECTS, CHECKERS, DRAFT, WONDERS, CHESS);
 
     private Games() {}
     public static List<String> ids() { return IDS; }
@@ -18,6 +20,8 @@ public final class Games {
             case EFFECTS -> new DiscardGame(true);
             case CHECKERS -> new CheckersGame();
             case DRAFT -> new DraftGame();
+            case WONDERS -> new AgesGame();
+            case CHESS -> new ChessGame();
             default -> new DiscardGame();
         };
     }

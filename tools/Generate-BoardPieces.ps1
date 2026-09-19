@@ -21,7 +21,7 @@ function New-Cell($hex, $name) {
     $g.SmoothingMode = [Drawing.Drawing2D.SmoothingMode]::None
     $base = [Drawing.ColorTranslator]::FromHtml($hex)
     $g.Clear($base)
-    $rng = New-Object Random (($name.GetHashCode()) -band 0x7fffffff)
+    $rng = New-Object Random $(if ($name -eq 'cell_light') { 271 } else { 739 })
     for ($i = 0; $i -lt 180; $i++) {
         $d = $rng.Next(-10, 11)
         $c = [Drawing.Color]::FromArgb(
@@ -39,7 +39,7 @@ function New-Token($fillHex, $ringHex, $king, $name) {
     $bitmap = New-Object Drawing.Bitmap(64, 64)
     $g = [Drawing.Graphics]::FromImage($bitmap)
     $g.SmoothingMode = [Drawing.Drawing2D.SmoothingMode]::AntiAlias
-    $g.Clear([Drawing.Color]::FromArgb(0, 0, 0, 0))
+    $g.Clear([Drawing.ColorTranslator]::FromHtml($fillHex))
     $fill = New-Object Drawing.SolidBrush ([Drawing.ColorTranslator]::FromHtml($fillHex))
     $ring = New-Object Drawing.Pen ([Drawing.ColorTranslator]::FromHtml($ringHex), 3)
     $g.FillEllipse($fill, 6, 6, 52, 52)
@@ -83,64 +83,35 @@ function Cell-Model($name) {
 "@
 }
 function Token-Model($name, $king) {
-    $top = if ($king) { 'minecraft:block/gold_block' } else { "mineboard:item/$name" }
-    $crown = if ($king) {
-@'
-    ,{
-      "from": [5.2, 8.5, 5.2],
-      "to": [10.8, 9.2, 10.8],
-      "faces": {
-        "up": { "uv": [4, 4, 12, 12], "texture": "#crown" },
-        "down": { "uv": [4, 4, 12, 12], "texture": "#crown" },
-        "north": { "uv": [4, 4, 12, 8], "texture": "#crown" },
-        "south": { "uv": [4, 4, 12, 8], "texture": "#crown" },
-        "east": { "uv": [4, 4, 12, 8], "texture": "#crown" },
-        "west": { "uv": [4, 4, 12, 8], "texture": "#crown" }
-      }
-    },
-    {
-      "from": [5.2, 8.5, 5.2],
-      "to": [10.8, 9.2, 10.8],
-      "rotation": { "angle": 45, "axis": "y", "origin": [8, 8, 8] },
-      "faces": {
-        "up": { "uv": [4, 4, 12, 12], "texture": "#crown" },
-        "north": { "uv": [4, 4, 12, 8], "texture": "#crown" },
-        "south": { "uv": [4, 4, 12, 8], "texture": "#crown" },
-        "east": { "uv": [4, 4, 12, 8], "texture": "#crown" },
-        "west": { "uv": [4, 4, 12, 8], "texture": "#crown" }
-      }
+    # Five adjacent bands form a solid, stepped disk. No rotated overlapping
+    # planes or alpha-cut side walls; every top texel has a matching volume.
+    $elements = [Collections.Generic.List[object]]::new()
+    $layers = @(@(6.8,7.3,0.0), @(7.3,8.6,0.3), @(8.6,9.0,0.0))
+    if ($king) { $layers += @(@(9.0,9.5,0.0), @(9.5,10.8,0.3), @(10.8,11.2,0.0)) }
+    $bands = @(@(5,3,11,4), @(4,4,12,6), @(3,6,13,10), @(4,10,12,12), @(5,12,11,13))
+    foreach ($layer in $layers) {
+        foreach ($band in $bands) {
+            $inset = $layer[2]
+            $x0 = $band[0] + $inset; $x1 = $band[2] - $inset
+            $z0 = $band[1]; $z1 = $band[3]
+            $uv = @((($x0-3)*1.6), (($z0-3)*1.6), (($x1-3)*1.6), (($z1-3)*1.6))
+            $faces = [ordered]@{
+                up = @{ uv=$uv; texture='#all' }
+                down = @{ uv=$uv; texture='#all' }
+            }
+            foreach ($side in @('north','south','east','west')) {
+                $faces[$side] = @{ uv=@(0,0,16,2); texture='#all' }
+            }
+            $elements.Add(@{ from=@($x0,$layer[0],$z0); to=@($x1,$layer[1],$z1); faces=$faces })
+        }
     }
-'@
-    } else { '' }
+    $jsonElements = ($elements | ForEach-Object { '    ' + ($_ | ConvertTo-Json -Depth 20 -Compress) }) -join ",`n"
     @"
 {
   "gui_light": "front",
-  "textures": { "all": "mineboard:item/$name", "crown": "$top", "particle": "mineboard:item/$name" },
+  "textures": { "all": "mineboard:item/$name", "particle": "mineboard:item/$name" },
   "elements": [
-    {
-      "from": [3, 7.7, 3],
-      "to": [13, 8.5, 13],
-      "faces": {
-        "up": { "uv": [0, 0, 16, 16], "texture": "#all" },
-        "down": { "uv": [0, 0, 16, 16], "texture": "#all" },
-        "north": { "uv": [0, 12, 16, 16], "texture": "#all" },
-        "south": { "uv": [0, 12, 16, 16], "texture": "#all" },
-        "east": { "uv": [0, 12, 16, 16], "texture": "#all" },
-        "west": { "uv": [0, 12, 16, 16], "texture": "#all" }
-      }
-    },
-    {
-      "from": [3, 7.7, 3],
-      "to": [13, 8.5, 13],
-      "rotation": { "angle": 45, "axis": "y", "origin": [8, 8, 8] },
-      "faces": {
-        "up": { "uv": [0, 0, 16, 16], "texture": "#all" },
-        "north": { "uv": [0, 12, 16, 16], "texture": "#all" },
-        "south": { "uv": [0, 12, 16, 16], "texture": "#all" },
-        "east": { "uv": [0, 12, 16, 16], "texture": "#all" },
-        "west": { "uv": [0, 12, 16, 16], "texture": "#all" }
-      }
-    }$crown
+$jsonElements
   ]
 }
 "@

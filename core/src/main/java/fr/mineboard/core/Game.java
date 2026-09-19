@@ -7,6 +7,8 @@ import java.util.UUID;
 public interface Game {
     String id();
     int seats();
+    default int minSeats() { return seats(); }
+    default int maxSeats() { return seats(); }
     String countKey();
     String hintKey();
     String controlsKey();

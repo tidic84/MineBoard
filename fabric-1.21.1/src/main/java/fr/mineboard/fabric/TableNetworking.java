@@ -21,8 +21,8 @@ public final class TableNetworking {
     public record State(BlockPos pos, String view, String message, boolean open, boolean closed) implements CustomPayload {
         public static final Id<State> ID = new Id<>(MineBoard.id("state"));
         public static final PacketCodec<RegistryByteBuf, State> CODEC = PacketCodec.of(
-            (value, buf) -> { buf.writeBlockPos(value.pos); buf.writeString(value.view, 16384); buf.writeString(value.message, 128); buf.writeBoolean(value.open); buf.writeBoolean(value.closed); },
-            buf -> new State(buf.readBlockPos(), buf.readString(16384), buf.readString(128), buf.readBoolean(), buf.readBoolean()));
+            (value, buf) -> { buf.writeBlockPos(value.pos); buf.writeString(value.view, 32767); buf.writeString(value.message, 128); buf.writeBoolean(value.open); buf.writeBoolean(value.closed); },
+            buf -> new State(buf.readBlockPos(), buf.readString(32767), buf.readString(128), buf.readBoolean(), buf.readBoolean()));
         @Override public Id<? extends CustomPayload> getId() { return ID; }
     }
     private static final Map<UUID, TableBlockEntity> SESSIONS = new HashMap<>();

@@ -1,0 +1,8 @@
+{
+  "parent": "mineboard:item/card_0",
+  "textures": {
+    "front": "mineboard:item/ages_grey",
+    "particle": "mineboard:item/ages_grey",
+    "back": "mineboard:item/back"
+  }
+}
